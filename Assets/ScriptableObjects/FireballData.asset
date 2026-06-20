@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b72cb58f55ea114eb1d22f920707f5e, type: 3}
+  m_Name: FireballData
+  m_EditorClassIdentifier: Assembly-CSharp::SpellData
+  spellName: Fireball
+  damage: 25
+  projectileSpeed: 15
+  projectilePrefab: {fileID: 8002271638062744636, guid: b87e1d3353353064794ae12128758e87, type: 3}
+  castClip: {fileID: 8300000, guid: 9d67d18b7a6f02d468af637662ffd037, type: 3}
+  ImpactPrefabVFX: {fileID: 5024009746357069194, guid: ec3f674830402cc45bce805cf6493db7, type: 3}

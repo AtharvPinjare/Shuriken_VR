@@ -6,11 +6,21 @@ public class SpellCaster : MonoBehaviour
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private AudioSource castAudioSource;
     [SerializeField] private float castCooldown = 1f;
+    [SerializeField] private GestureManager _gestureManager;
 
-    private float _lastCastTime;
+    private float _lastCastTime; 
 
-    // This is what SelectorUnityEventWrapper will call
-    public void OnFireballGesture()
+    private void OnEnable()
+    {
+        _gestureManager.OnFireballGesture += HandleFireballGesture;
+    }
+
+    private void OnDisable()
+    {
+        _gestureManager.OnFireballGesture -= HandleFireballGesture;
+    }
+
+    public void HandleFireballGesture()  
     {
         if (Time.time - _lastCastTime < castCooldown) return;
         _lastCastTime = Time.time;
@@ -41,3 +51,5 @@ public class SpellCaster : MonoBehaviour
             castAudioSource.PlayOneShot(data.castClip);
     }
 }
+
+

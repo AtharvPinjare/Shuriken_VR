@@ -16,11 +16,9 @@ public class Health : MonoBehaviour
     {
         if (IsDead) return;
 
-
         _currentHealth -= amount;
-        Debug.Log($"{gameObject.name} HP: {_currentHealth}");
+        Debug.Log($"{gameObject.GetInstanceID()} HP: {_currentHealth}");
         OnDamaged.Invoke();
-
 
         if (_currentHealth <= 0f)
         {

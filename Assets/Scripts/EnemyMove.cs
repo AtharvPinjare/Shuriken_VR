@@ -22,6 +22,8 @@ public class EnemyMove : MonoBehaviour
     Renderer _renderer;
     Color _originalColor;
     float _attackTimer;
+    Coroutine _slowCoroutine;
+    float _baseSpeed;
 
     // Injected by WaveSpawner right after Instantiate — do NOT expose these
     // in the Inspector. Prefab assets cannot hold scene references, which is
@@ -46,6 +48,7 @@ public class EnemyMove : MonoBehaviour
         if (_renderer != null)
             _originalColor = _renderer.material.color;
 
+        _baseSpeed = _agent.speed;
         var health = GetComponent<Health>();
         health.OnDeath.AddListener(OnDeath);
         health.OnDamaged.AddListener(FlashDamage);
@@ -53,6 +56,15 @@ public class EnemyMove : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+        {
+            if (_currentState != EnemyState.Dead)
+            {
+                _agent.ResetPath();
+                _animator.SetFloat("MoveSpeed", 0f);
+            }
+            return;
+        }
         // Guards against a frame-ordering edge case: if Start() runs before
         // WaveSpawner's InjectPlayerReferences() call lands, this stays Idle
         // and non-crashing instead of throwing on a null _playerTransform.
@@ -120,4 +132,24 @@ public class EnemyMove : MonoBehaviour
 
     float DistanceToPlayer() =>
         Vector3.Distance(transform.position, _playerTransform.position);
+
+
+    public void ApplySlow(float multiplier, float duration)
+    {
+        if (_currentState == EnemyState.Dead) return;
+
+        if (_slowCoroutine != null)
+            StopCoroutine(_slowCoroutine);
+
+        _slowCoroutine = StartCoroutine(SlowCoroutine(multiplier, duration));
+    }
+
+    System.Collections.IEnumerator SlowCoroutine(float multiplier, float duration)
+    {
+        _agent.speed = _baseSpeed * multiplier;
+        yield return new WaitForSeconds(duration);
+        if (_currentState != EnemyState.Dead)
+            _agent.speed = _baseSpeed;
+        _slowCoroutine = null;
+    }
 }

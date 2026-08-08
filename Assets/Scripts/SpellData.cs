@@ -12,5 +12,7 @@ public class SpellData : ScriptableObject
     public GameObject projectilePrefab;
 
     public AudioClip castClip;    
+
     public GameObject ImpactPrefabVFX;
+    public StatusEffect effectOnHit;   // null for Fireball — no change to existing asset
 }

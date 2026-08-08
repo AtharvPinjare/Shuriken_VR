@@ -12,7 +12,7 @@ public class EnemyEntity : BaseEntity
     public override void OnDeath()
     {
         Debug.Log(entityName + " died! +" + scoreValue + " points");
-        GameManager.Instance.AddScore(scoreValue);
+        // GameManager.Instance.AddScore(scoreValue);
         gameObject.SetActive(false);
     }
 }

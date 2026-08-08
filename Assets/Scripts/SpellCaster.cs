@@ -3,29 +3,41 @@ using UnityEngine;
 public class SpellCaster : MonoBehaviour
 {
     [SerializeField] private SpellData fireballData;
+    [SerializeField] private SpellData iceShardData;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private AudioSource castAudioSource;
     [SerializeField] private float castCooldown = 1f;
     [SerializeField] private GestureManager _gestureManager;
 
-    private float _lastCastTime; 
+    private float _lastCastTime;
 
     private void OnEnable()
     {
         _gestureManager.OnFireballGesture += HandleFireballGesture;
+        _gestureManager.OnIceShardGesture += HandleIceShardGesture;
     }
 
     private void OnDisable()
     {
         _gestureManager.OnFireballGesture -= HandleFireballGesture;
+        _gestureManager.OnIceShardGesture -= HandleIceShardGesture;
     }
 
-    public void HandleFireballGesture()  
+    public void HandleFireballGesture()
     {
+        if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
         if (Time.time - _lastCastTime < castCooldown) return;
         _lastCastTime = Time.time;
         if (fireballData != null) CastSpell(fireballData);
     }
+
+    public void HandleIceShardGesture()
+{
+    if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
+    if (Time.time - _lastCastTime < castCooldown) return;
+    _lastCastTime = Time.time;
+    if (iceShardData != null) CastSpell(iceShardData);
+}
 
     private void CastSpell(SpellData data)
     {

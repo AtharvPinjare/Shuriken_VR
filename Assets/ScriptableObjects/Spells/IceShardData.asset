@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b72cb58f55ea114eb1d22f920707f5e, type: 3}
-  m_Name: IceShard
+  m_Name: IceShardData
   m_EditorClassIdentifier: Assembly-CSharp::SpellData
   spellName: IceShard
-  damage: 20
-  projectileSpeed: 25
+  damage: 15
+  projectileSpeed: 30
   projectilePrefab: {fileID: 0}
-  castClip: {fileID: 0}
+  castClip: {fileID: 8300000, guid: 08bddbe36a2577d42af8e4bb92937466, type: 3}
+  ImpactPrefabVFX: {fileID: 0}
+  effectOnHit: {fileID: 11400000, guid: 695d50b1861769b4d9b376cc8f296737, type: 2}

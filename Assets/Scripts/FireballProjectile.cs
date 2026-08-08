@@ -22,6 +22,9 @@ public class FireballProjectile : MonoBehaviour
         if (collision.gameObject.TryGetComponent(out Health health))
             health.TakeDamage(_data.damage);
 
+        if (_data.effectOnHit != null)
+            _data.effectOnHit.Apply(collision.gameObject);
+
         if (_data.ImpactPrefabVFX != null)
             Instantiate(_data.ImpactPrefabVFX, collision.contacts[0].point, Quaternion.identity);
 

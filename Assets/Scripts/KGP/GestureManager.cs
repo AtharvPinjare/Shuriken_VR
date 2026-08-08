@@ -7,6 +7,7 @@ public class GestureManager : MonoBehaviour
     private IGestureProvider _provider;
 
     public event Action OnFireballGesture;
+    public event Action OnIceShardGesture;
 
     private void Awake()
     {
@@ -18,16 +19,23 @@ public class GestureManager : MonoBehaviour
     private void OnEnable()
     {
         if (_provider != null)
+        {
             _provider.OnFireballGesture += HandleFireball;
+            _provider.OnIceShardGesture += HandleIceShard;
+        }
     }
 
     private void OnDisable()
     {
         if (_provider != null)
+        {
             _provider.OnFireballGesture -= HandleFireball;
+            _provider.OnIceShardGesture -= HandleIceShard;
+        }
     }
 
     private void HandleFireball() => OnFireballGesture?.Invoke();
+    private void HandleIceShard() => OnIceShardGesture?.Invoke();
 
 }
 

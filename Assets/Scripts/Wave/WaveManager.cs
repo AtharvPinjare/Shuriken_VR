@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class WaveManager : MonoBehaviour
 {
     [SerializeField] private List<WaveData> _waves;
     [SerializeField] private WaveSpawner _spawner;
     [SerializeField] private float _delayBetweenWaves = 3f;
+    public UnityEvent OnAllWavesCleared;
 
     private int _currentWaveIndex = -1;
     private int _aliveCount;
@@ -26,6 +28,7 @@ public class WaveManager : MonoBehaviour
         if (_currentWaveIndex >= _waves.Count)
         {
             Debug.Log("All waves cleared — game won.");
+            OnAllWavesCleared.Invoke();
             return;
         }
 

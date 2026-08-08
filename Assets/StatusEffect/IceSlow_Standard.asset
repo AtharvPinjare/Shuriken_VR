@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b20ce08283dfad6478dfea4e3d3018ac, type: 3}
   m_Name: IceSlow_Standard
   m_EditorClassIdentifier: Assembly-CSharp::IceSlowEffect
-  slowMultiplier: 0.5
+  slowMultiplier: 0.25
   duration: 3

@@ -23,6 +23,9 @@ public class EnemyMove : MonoBehaviour
     Color _originalColor;
     float _attackTimer;
     Coroutine _slowCoroutine;
+    [SerializeField] Color slowColor = new Color(0.4f, 0.7f, 1f); // icy blue
+    Color _statusColor;
+
     float _baseSpeed;
 
     // Injected by WaveSpawner right after Instantiate — do NOT expose these
@@ -46,7 +49,10 @@ public class EnemyMove : MonoBehaviour
         _animator = GetComponentInChildren<Animator>();
         _renderer = GetComponentInChildren<Renderer>();
         if (_renderer != null)
+        {
             _originalColor = _renderer.material.color;
+            _statusColor = _originalColor;
+        }
 
         _baseSpeed = _agent.speed;
         var health = GetComponent<Health>();
@@ -127,7 +133,7 @@ public class EnemyMove : MonoBehaviour
     {
         _renderer.material.color = Color.red;
         yield return new WaitForSeconds(0.1f);
-        _renderer.material.color = _originalColor;
+        _renderer.material.color = _statusColor;
     }
 
     float DistanceToPlayer() =>
@@ -147,9 +153,17 @@ public class EnemyMove : MonoBehaviour
     System.Collections.IEnumerator SlowCoroutine(float multiplier, float duration)
     {
         _agent.speed = _baseSpeed * multiplier;
+        _statusColor = slowColor;
+        if (_renderer != null) _renderer.material.color = _statusColor;
+
         yield return new WaitForSeconds(duration);
+
         if (_currentState != EnemyState.Dead)
+        {
             _agent.speed = _baseSpeed;
+            _statusColor = _originalColor;
+            if (_renderer != null) _renderer.material.color = _statusColor;
+        }
         _slowCoroutine = null;
     }
 }

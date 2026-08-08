@@ -15,7 +15,7 @@ MonoBehaviour:
   spellName: IceShard
   damage: 15
   projectileSpeed: 30
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 4183030572594716955, guid: 90e6705b78690b04db0ef0d4b5ec4778, type: 3}
   castClip: {fileID: 8300000, guid: 08bddbe36a2577d42af8e4bb92937466, type: 3}
-  ImpactPrefabVFX: {fileID: 0}
+  ImpactPrefabVFX: {fileID: 2955623459812423943, guid: f5507a8c6a22c404ab324980c4e8a11b, type: 3}
   effectOnHit: {fileID: 11400000, guid: 695d50b1861769b4d9b376cc8f296737, type: 2}

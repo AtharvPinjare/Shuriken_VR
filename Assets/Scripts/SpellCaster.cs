@@ -32,12 +32,12 @@ public class SpellCaster : MonoBehaviour
     }
 
     public void HandleIceShardGesture()
-{
-    if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
-    if (Time.time - _lastCastTime < castCooldown) return;
-    _lastCastTime = Time.time;
-    if (iceShardData != null) CastSpell(iceShardData);
-}
+    {
+        if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
+        if (Time.time - _lastCastTime < castCooldown) return;
+        _lastCastTime = Time.time;
+        if (iceShardData != null) CastSpell(iceShardData);
+    }
 
     private void CastSpell(SpellData data)
     {

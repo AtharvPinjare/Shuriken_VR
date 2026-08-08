@@ -11,4 +11,8 @@ public class HandTrackingGestureProvider : MonoBehaviour, IGestureProvider
     {
         OnFireballGesture?.Invoke();
     }
+    public void NotifyIceShardGesture()
+    {
+        OnIceShardGesture?.Invoke();
+    }
 }

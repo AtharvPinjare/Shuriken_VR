@@ -4,12 +4,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+[System.Serializable]
+public class IntUnityEvent : UnityEvent<int>
+{
+}
+
+
 public class WaveManager : MonoBehaviour
 {
     [SerializeField] private List<WaveData> _waves;
     [SerializeField] private WaveSpawner _spawner;
     [SerializeField] private float _delayBetweenWaves = 3f;
     public UnityEvent OnAllWavesCleared;
+    public IntUnityEvent OnWaveStarted;
+    public int CurrentWave => _currentWaveIndex + 1;
+    public int TotalWaves => _waves.Count;
 
     private int _currentWaveIndex = -1;
     private int _aliveCount;
@@ -37,7 +46,9 @@ public class WaveManager : MonoBehaviour
         _waveCleared = false;
 
         Debug.Log($"Starting wave {_currentWaveIndex + 1}");
+        OnWaveStarted?.Invoke(_currentWaveIndex + 1);
         _spawner.SpawnWave(_waves[_currentWaveIndex], this);
+
     }
 
     // Called by WaveSpawner immediately after Instantiate for each enemy.
@@ -45,7 +56,7 @@ public class WaveManager : MonoBehaviour
     {
         _aliveCount++;
         health.OnDeath.AddListener(OnEnemyDied);
-        Debug.Log($"Registered enemy, alive: {_aliveCount}"); 
+        Debug.Log($"Registered enemy, alive: {_aliveCount}");
     }
 
     // Called by WaveSpawner once it has finished spawning every enemy in the wave.

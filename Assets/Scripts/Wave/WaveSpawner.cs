@@ -21,11 +21,20 @@ public class WaveSpawner : MonoBehaviour
             yield break;
         }
 
-        for (int i = 0; i < waveData.enemyCount; i++) 
-        {   
+        for (int i = 0; i < waveData.enemyCount; i++)
+        {
             Transform spawnPoint = _spawnPoints[i % _spawnPoints.Length];
             GameObject enemy = Instantiate(waveData.enemyPrefab, spawnPoint.position, spawnPoint.rotation);
 
+            BillboardUI healthBarBillboard = enemy.GetComponentInChildren<BillboardUI>();
+            if (healthBarBillboard == null)
+            {
+                Debug.LogError($"Spawned enemy '{enemy.name}' has no BillboardUI on its Canvas — health bar will not face the player.");
+            }
+            else
+            {
+                healthBarBillboard.SetTarget(_playerTransform);
+            }
             Health enemyHealth = enemy.GetComponent<Health>();
             if (enemyHealth == null)
             {

@@ -371,6 +371,8 @@ GameObject:
   - component: {fileID: 3456854704705004973}
   - component: {fileID: 5704921867061915260}
   - component: {fileID: 3148677737951160430}
+  - component: {fileID: 1351204285086832031}
+  - component: {fileID: 5367896519832849967}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -461,6 +463,31 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &1351204285086832031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6222652302979059636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643a8dd8ec14f3a41bef1ba64f8db928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardUI
+  _target: {fileID: 0}
+--- !u!114 &5367896519832849967
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6222652302979059636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b57577ac584b8a4d8a3c9b013a3be16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBarUI
 --- !u!1 &7295376210553307267
 GameObject:
   m_ObjectHideFlags: 0
@@ -875,6 +902,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+  _currentHealth: 0
   OnDeath:
     m_PersistentCalls:
       m_Calls: []

@@ -8,6 +8,7 @@ public class SpellCaster : MonoBehaviour
     [SerializeField] private AudioSource castAudioSource;
     [SerializeField] private float castCooldown = 1f;
     [SerializeField] private GestureManager _gestureManager;
+    public float CooldownProgress => Mathf.Clamp01((Time.time - _lastCastTime) / castCooldown);
 
     private float _lastCastTime;
 

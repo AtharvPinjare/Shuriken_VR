@@ -4,7 +4,7 @@ Read AGENTS.md first if you haven't this session. This file is the live state �
 block below every time you switch tasks or open a fresh Codex session.
 
 ## Right now
-- Last completed: Item 1 (Mutant fix)
+- Last completed: Item 2 (Enemy health bar asset swap)
 - In progress: —
 - Next: Item 4 (Locomotion)
 
@@ -19,8 +19,8 @@ Track B item needs a Track A asset first.
 
 ## Ship-line — decide this now, not at hour 10
 1. Dragon: fewer fully-working types beats four half-wired ones.
-2. Locomotion: pre-committed fallback to continuous/teleport if grab-based isn't converging by
-   your own cutoff (pick one, e.g. 90 minutes — write it here: ______).
+2. Locomotion: pre-committed fallback to thumbstick continuous locomotion if air-pull isn't
+   converging by your own cutoff (pick one, e.g. 90 minutes — write it here: ______).
 3. Ranged enemy VFX: functional wiring with placeholder VFX is a complete pass; cosmetic polish
    is stretch.
 4. Environment polish is the most cuttable item overall. A plain-but-clean arena ships; a
@@ -60,70 +60,86 @@ Confirm smooth rotation, consistent chase, no animation flicker.
 
 ---
 
-## 2. [PINJU] Enemy health bar asset swap
+## 2. [x] [PINJU] Enemy health bar asset swap
 Slots into the existing EnemyHealthBarUI.cs / BillboardUI.cs Canvas pattern — no code changes
 needed if the new asset is still a Slider. If its structure is different, flag before Codex
 touches EnemyHealthBarUI.cs.
 
 ---
 
-## 3. [PINJU] Fireball/Ice Shard FBX + hit VFX
+## 3. [x] [PINJU] Fireball/Ice Shard FBX + hit VFX
 Asset-only: swap prefab references in the existing SpellData assets / projectile prefabs. No
 script changes expected if collider/rigidbody setup carries over onto the new model.
 
 ---
 
-## 4. [CODEX, you steer] Locomotion — grab-based preferred, continuous as fallback
-Check `PhysicsGrabbable.cs` and `RigidbodyKinematicLocker.cs` first — both are already in the
-project as Meta Interaction SDK samples and may cover most of the grab plumbing. Also check
-whether the imported SDK package already ships a climbing/locomotion sample before writing
-anything new.
-Rig exception applies (see AGENTS.md). Set your own time cutoff before starting — written above
-in the ship-line section.
+## 4. [CODEX, you steer] Locomotion — continuous air-pull (Drakheir-style)
+Not anchor-based climbing — nothing needs to exist to grab. While a hand is gripping, track its
+world-position delta frame to frame; move the rig by the inverse of that delta. Pull your hand
+toward you, you move forward; push it away, you move back. Both hands work simultaneously.
+`PhysicsGrabbable.cs`/`RigidbodyKinematicLocker.cs` are NOT the base for this — those are for
+grabbing actual rigidbody objects, not relevant here.
+This is a movement input, not a spell-cast gesture — it must NOT route through IGestureProvider
+or GestureManager (locked, casting-only). Grip detection should be its own thing: check first
+whether IHand/HandRef already exposes a pinch/grab-strength value to use directly, rather than
+building new pose-recognition wiring for it.
+Rig exception applies (see AGENTS.md). Set your own time cutoff before starting — write it in
+the ship-line section above. Note: pure air-pull locomotion (no physical anchor) is more prone
+to motion sickness for some players than anchor-based climbing — not worth solving tonight,
+just don't be surprised if it comes up in playtesting.
 
-Prompt (grab-based):
+Prompt:
 ```
-Implement grab-based locomotion (pull yourself through the world by grabbing static anchors,
-Drakheir/Boneworks-style). Check PhysicsGrabbable.cs / RigidbodyKinematicLocker.cs first as a
-possible base, and check the imported Meta Interaction SDK samples for an existing
-climbing/locomotion component before writing one from scratch.
-This is the one task allowed to add components to the OVRCameraRig root. Do not touch anything
-under the rig related to hand-tracking data sources, the gesture provider components, or
-camera/head anchor setup — casting must keep working exactly as before.
-Deliverable: player can pull themselves around the arena by grabbing fixed points.
+Implement continuous air-pull locomotion (Drakheir-style): while a hand is gripping, track its
+world-position delta frame-to-frame and move the OVRCameraRig by the inverse of that delta
+(times a tunable multiplier) — pulling a hand toward yourself moves you forward in that
+direction. Support both hands simultaneously (sum deltas if both gripped).
+Grip detection: check first whether IHand/HandRef already exposes a pinch/grab-strength value
+to use as the signal, rather than building new pose detection. For controller fallback, use the
+physical grip button.
+This is a NEW input pathway for movement — do not route it through IGestureProvider or
+GestureManager, those stay locked to spell-casting gestures only.
+This is the one task allowed to add a component to the OVRCameraRig root that moves it. Do not
+touch anything under the rig related to hand-tracking data sources, the gesture provider
+components, or camera/head anchor setup — casting must keep working exactly as before.
+Deliverable: gripping and moving a hand translates the player through the arena; releasing
+stops movement (momentum/drag is a stretch, not required for v1).
 Test: cast a spell immediately after moving via the new locomotion, confirm gesture detection
-is unaffected.
+is unaffected. Grip with both hands at once and confirm it doesn't double-speed or fight itself.
 ```
-Fallback prompt (if pivoting at your cutoff):
+Fallback prompt (true zero-build fallback — flip to this if the above stalls past your cutoff):
 ```
-Implement continuous joystick locomotion using Meta Interaction SDK's standard locomotion
-sample as the base, added to the OVRCameraRig root only. Same rig-exception constraint —
-hand-tracking/gesture wiring untouched.
+Enable Meta Interaction SDK / OVR's standard thumbstick continuous locomotion on the
+OVRCameraRig, if the SDK ships one out of the box (check the imported package's samples/
+first-party locomotion component before writing anything custom). Same rig-exception
+constraint — hand-tracking/gesture wiring untouched.
 ```
 
 ---
 
-## 5. [CODEX] Dragon enemy — 4 types
-**Resolve first:** do the dragons fly or move on the ground? Grounded reuses NavMeshAgent like
-existing enemies; flight needs a different, non-NavMesh movement controller. Decide before
-running the prompt.
-Use a data-driven pattern for the 4 variants (a DragonType SO or prefab-variant approach,
-matching how SpellData/WaveData already work) — get ONE type fully wired end-to-end first, the
-other 3 should be near-zero-cost swaps once the pattern is proven.
+## 5. [CODEX] Dragon enemy — 4 types, always flying
+Assets already live at Assets\FourEvilDragonsHP\Prefab\{DragonNightmare,DragonSoulEater,
+DragonTerrorBringer,DragonUsurper}\ — each folder is one type, color subfolders inside it are
+reskins, not separate types. Do not touch Assets\FourEvilDragonsHP\Scene\ — those are the asset
+pack's own demo scenes, reference only.
+Confirmed: dragons always fly, never NavMeshAgent — direct transform/physics-based flight.
 
 Prompt:
 ```
-Integrate the dragon enemy (models + animations already provided). Movement: [GROUNDED via
-NavMeshAgent, matching EnemyMove's pattern / FLYING — needs a new movement approach. State
-which before starting.]
-Build one fully wired dragon type first: Health integration (reuse Health.cs unmodified), FSM
-matching the complexity actually needed (reuse EnemyMove's Idle/Chase/Attack/Dead enum-switch
-pattern if it fits; only diverge if the dragon genuinely needs more states), damage/death
-events wired the same way existing enemies do it.
-Once one type works, add the other 3 as data/prefab variants of the same pattern — do not write
-4 separate scripts unless behaviour actually diverges per type.
-Deliverable: 4 dragon prefabs, at least one confirmed fully working standalone.
-Test: spawn each type manually, confirm damage/death/animation cycle, check console for errors.
+Wire up the dragon enemy using Assets\FourEvilDragonsHP\Prefab\DragonNightmare\Blue.prefab as
+the first reference type. Dragons always fly — do not use NavMeshAgent, use direct
+transform/physics-based flight toward/around the player, matching the pattern other enemies use
+for FSM structure (reuse EnemyMove's Idle/Chase/Attack/Dead enum-switch if it fits) but not for
+movement.
+Reuse Health.cs unmodified for damage/death — this is Assets\Scripts\Health.cs specifically, NOT
+Assets\Scripts\ProgBasics\HealthComponent.cs, which is unrelated legacy code, ignore it entirely.
+Once DragonNightmare/Blue is fully working, wire the other 3 types (DragonSoulEater,
+DragonTerrorBringer, DragonUsurper) as data/prefab variants of the same pattern — color variants
+within each type just need the model swapped, not new logic.
+Deliverable: at least DragonNightmare confirmed fully working; other 3 types wired via the same
+pattern.
+Test: spawn each type manually in Game_Scene.unity, confirm damage/death/flight behaviour, check
+console for errors.
 ```
 
 ---

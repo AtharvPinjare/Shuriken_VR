@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpellData
   spellName: Fireball
   damage: 25
-  projectileSpeed: 15
+  projectileSpeed: 30
   projectilePrefab: {fileID: 8002271638062744636, guid: b87e1d3353353064794ae12128758e87, type: 3}
   castClip: {fileID: 8300000, guid: 9d67d18b7a6f02d468af637662ffd037, type: 3}
-  ImpactPrefabVFX: {fileID: 5024009746357069194, guid: ec3f674830402cc45bce805cf6493db7, type: 3}
+  ImpactPrefabVFX: {fileID: 7909081177045534403, guid: c5f2c080192045743b4f4664db3295a1, type: 3}
+  effectOnHit: {fileID: 0}

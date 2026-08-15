@@ -6,7 +6,7 @@ public class BillboardUI : MonoBehaviour
 
     public void SetTarget(Transform target) => _target = target;
 
-    private void Update()
+    private void LateUpdate()
     {
         if (_target == null) return;
         Vector3 dirToTarget = (_target.position - transform.position).normalized;

@@ -4,21 +4,71 @@ Sprint mode. Shipping in ~12 hours. Read this in full before touching anything. 
 architecture by scanning the project — everything you need is here or in CHECKLIST.md.
 
 ## Project
-Unity 6 (6000.3.8f1), Meta Interaction SDK v201.0.0, Quest 3, Android/IL2CPP final build.
+Unity 6 (6000.0.x), Meta Interaction SDK v201.0.0, Quest 3, Android/IL2CPP final build.
 Repo root: C:\Shuriken_VR\Shuriken_VR
 
-**[PINJU — do this before the first session]** Paste your actual Assets scripts/prefabs tree
-below. Ground-truth paths beat described ones — this is the single biggest lever against Codex
-inventing files that don't exist or guessing wrong paths.
+## Real project file paths (ground truth — use these, don't guess or search)
+```
+Assets\Enemy\Prefab\P_Mutant.prefab                     <- Mutant enemy prefab
+Assets\Prefab\Fireball.prefab
+Assets\Prefab\Iceshard.prefab
+Assets\Prefab\CastTrailParticles.prefab
+Assets\Prefab\ImpactParticleSystem.prefab
+Assets\ScriptableObjects\Spells\FireballData.asset
+Assets\ScriptableObjects\Spells\IceShardData.asset
+Assets\ScriptableObjects\Spells\SnakeVenom.asset         <- status unknown, confirm before use
+Assets\ScriptableObjects\Waves\Wave_1.asset
+Assets\ScriptableObjects\Waves\Wave_2.asset
+Assets\StatusEffect\IceSlow_Standard.asset                <- SO instance (class lives in Scripts\IceScripts)
 
-PowerShell, from repo root:
-```
-Get-ChildItem -Recurse -Include *.cs,*.prefab,*.asset "Assets\<your scripts/prefabs root>" | Resolve-Path -Relative
+Assets\Scripts\EnemyMove.cs
+Assets\Scripts\FireballProjectile.cs
+Assets\Scripts\GameManager.cs
+Assets\Scripts\Health.cs                                   <- THE canonical shared health/damage component
+Assets\Scripts\SpellCaster.cs
+Assets\Scripts\SpellData.cs
+Assets\Scripts\IceScripts\StatusEffect.cs
+Assets\Scripts\IceScripts\IceSlowEffect.cs
+Assets\Scripts\KGP\GestureManager.cs                        <- LOCKED
+Assets\Scripts\KGP\IGestureProvider.cs                      <- LOCKED
+Assets\Scripts\KGP\HandTrackingGestureProvider.cs           <- LOCKED
+Assets\Scripts\KGP\KeyboardGestureProvider.cs               <- LOCKED
+Assets\Scripts\KGP\EditorMouseLook.cs                        <- LOCKED (editor tool)
+Assets\Scripts\UI\BillboardUI.cs
+Assets\Scripts\UI\EnemyHealthBarUI.cs
+Assets\Scripts\UI\WaveCounterUI.cs
+Assets\Scripts\UI\CooldownIndicatorUI.cs
+Assets\Scripts\Wave\WaveData.cs
+Assets\Scripts\Wave\WaveManager.cs
+Assets\Scripts\Wave\WaveSpawner.cs
+
+Assets\FourEvilDragonsHP\Prefab\DragonNightmare\{Albino,Blue,DarkBlue,Green}.prefab
+Assets\FourEvilDragonsHP\Prefab\DragonSoulEater\{Blue,Green,Grey,Red}.prefab
+Assets\FourEvilDragonsHP\Prefab\DragonTerrorBringer\{Blue,Green,Purple,Red}.prefab
+Assets\FourEvilDragonsHP\Prefab\DragonUsurper\{Blue,Green,Purple,Red}.prefab
+  -> these ARE the 4 dragon types (color = reskin within a type, not a separate type).
+  -> Assets\FourEvilDragonsHP\Scene\*Scene\ are the asset pack's own demo scenes — reference
+     only, never edit, never treat as the game's scene.
+
+Assets\Vefects\Trails\VFX\Particles\VFX_Trail_{Fire,Ice,...}.prefab   <- pre-made VFX, Pinju's own task
+Assets\Travis Game Assets\Hit Impact Effects\Prefabs\Hits\Hit_0{1-4}.prefab  <- pre-made VFX, Pinju's own task
+
+Assets\Scenes\Game_Scene.unity        <- THE live gameplay scene. This is what Codex tests in.
+Assets\Scenes\MainMenu.unity          <- separate, new, unrelated to core sprint items
+Assets\Scenes\EnemyNavMesh\, PoseExamples_Test\, Testing\  <- stale test scenes, not ground truth, don't edit
+
+RANGED ENEMY MODEL: not yet located in the tree — [PINJU: fill in exact path here before Item 6]
 ```
 
-```
-<PASTE TREE HERE>
-```
+## Known discrepancies — confirm before Codex touches related files
+- **`Assets\Scripts\ProgBasics\{BaseEntity,EnemyEntity,HealthComponent,PlayerEntity}.cs`** looks
+  like an early teaching scaffold, separate from and older than the real `Health.cs` /
+  `EnemyMove.cs` system this whole project is actually built on. Treat as **legacy/dead code —
+  ignore, do not extend, do not confuse with `Health.cs`**, unless Pinju confirms it's still live.
+- `SnakeVenom.asset` (third spell SO) — status unconfirmed. Don't wire anything to it unless
+  Pinju says it's active.
+- `Assets\Scripts\Praneet\` (FloatingTitle.cs, TutorialSignActivator.cs) — another contributor's
+  MainMenu work, unrelated to the sprint items. Green zone but hands-off unless explicitly asked.
 
 ## Locked architecture (do not deviate)
 - Data = ScriptableObject (SpellData, WaveData, StatusEffect + subclasses). Behaviour =
@@ -84,6 +134,15 @@ Root causes: Apply Root Motion was enabled on the NavMeshAgent-driven prefab; th
 Idle/Chase ranges were inverted (25 detection / 10 lose); and Attack used one range for both
 entry and exit. Fixed by disabling root motion, setting loseRange to 30, and adding a 2.5m
 attack exit range. Idle ResetPath() was already correctly scoped to Idle.
+
+### Enemy health-bar visual quality
+Healthbar_BKG and Healthbar_Fill use trilinear filtering, generated mipmaps, and an Android
+ASTC 4x4 / quality-100 override; BillboardUI now updates in LateUpdate for steadier head-tracked
+facing.
+
+### Fireball hit SFX
+FireballProjectile plays FireballHitExplosion at the physics collision contact point with
+AudioSource.PlayClipAtPoint, so the audio remains audible after the projectile is destroyed.
 
 ### Locomotion system
 _(fill in once done: grab-based or continuous, what's now on the rig, what was reused from the SDK samples)_

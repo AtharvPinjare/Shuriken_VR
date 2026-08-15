@@ -143,9 +143,13 @@ facing.
 ### Fireball hit SFX
 FireballProjectile plays FireballHitExplosion at the physics collision contact point with
 a temporary 2D AudioSource, so the audio remains audible after the projectile is destroyed.
+Its M_Fireball_02_withTrails child has its demo Rigidbody and movement script removed, allowing
+the VFX Graph to inherit the projectile's transform throughout flight.
 
 ### Locomotion system
-_(fill in once done: grab-based or continuous, what's now on the rig, what was reused from the SDK samples)_
+Continuous air-pull is attached only to the OVRCameraRig root. It reads IHand pinch strength
+for tracked hands, Touch-controller grip when a controller is held, and averages active hand
+deltas in tracking space to prevent feedback or two-hand double speed. Gesture wiring is untouched.
 
 ### Dragon enemy
 _(fill in once done: grounded or flight, data pattern used for the 4 variants)_

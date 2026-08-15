@@ -4,9 +4,9 @@ Read AGENTS.md first if you haven't this session. This file is the live state �
 block below every time you switch tasks or open a fresh Codex session.
 
 ## Right now
-- Last completed: Item 2 (Enemy health bar asset swap)
+- Last completed: Item 4 (Continuous air-pull locomotion)
 - In progress: —
-- Next: Item 4 (Locomotion)
+- Next: Item 5 (Dragon enemy)
 
 ## Run two tracks in parallel, not serial
 **Track A (you, Unity Editor/art)** — items 2, 3, 7 visuals: health bar asset swap, fireball/ice
@@ -73,7 +73,7 @@ script changes expected if collider/rigidbody setup carries over onto the new mo
 
 ---
 
-## 4. [CODEX, you steer] Locomotion — continuous air-pull (Drakheir-style)
+## 4. [x] [CODEX] Locomotion — continuous air-pull (Drakheir-style)
 Not anchor-based climbing — nothing needs to exist to grab. While a hand is gripping, track its
 world-position delta frame to frame; move the rig by the inverse of that delta. Pull your hand
 toward you, you move forward; push it away, you move back. Both hands work simultaneously.

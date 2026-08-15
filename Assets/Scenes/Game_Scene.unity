@@ -1685,6 +1685,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100004, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1428333154}
+    - targetCorrespondingSourceObject: {fileID: 100004, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1950000011}
     - targetCorrespondingSourceObject: {fileID: 100006, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1832942076}
@@ -1766,6 +1769,24 @@ MonoBehaviour:
   OnDamaged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1950000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110396348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7ab27dc31934a7b96964cc0bd42ab96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AirPullLocomotion
+  movementMultiplier: 1
+  handPinchThreshold: 0.7
+  controllerGripThreshold: 0.7
+  gripFinger: 1
+  maxHandDeltaPerFrame: 0.25
+  handResolveInterval: 2
 --- !u!114 &1428333155
 MonoBehaviour:
   m_ObjectHideFlags: 0

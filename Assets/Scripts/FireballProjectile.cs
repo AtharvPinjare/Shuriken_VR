@@ -31,8 +31,18 @@ public class FireballProjectile : MonoBehaviour
             Instantiate(_data.ImpactPrefabVFX, collision.contacts[0].point, Quaternion.identity);
 
         if (hitExplosionClip != null)
-            AudioSource.PlayClipAtPoint(hitExplosionClip, collision.contacts[0].point);
+            PlayHitExplosion();
 
         Destroy(gameObject);
+    }
+
+    private void PlayHitExplosion()
+    {
+        GameObject audioObject = new GameObject("Fireball Hit Explosion SFX");
+        AudioSource audioSource = audioObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 0f;
+        audioSource.PlayOneShot(hitExplosionClip);
+
+        Destroy(audioObject, hitExplosionClip.length);
     }
 }

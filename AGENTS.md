@@ -142,7 +142,7 @@ facing.
 
 ### Fireball hit SFX
 FireballProjectile plays FireballHitExplosion at the physics collision contact point with
-AudioSource.PlayClipAtPoint, so the audio remains audible after the projectile is destroyed.
+a temporary 2D AudioSource, so the audio remains audible after the projectile is destroyed.
 
 ### Locomotion system
 _(fill in once done: grab-based or continuous, what's now on the rig, what was reused from the SDK samples)_

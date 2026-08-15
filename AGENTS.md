@@ -80,7 +80,10 @@ Append a short entry here as each new system lands. The next Codex session reads
 starting, so it follows the pattern actually used instead of re-deciding it.
 
 ### Mutant bug fix
-_(fill in once done: root cause + what fixed it)_
+Root causes: Apply Root Motion was enabled on the NavMeshAgent-driven prefab; the prefab's
+Idle/Chase ranges were inverted (25 detection / 10 lose); and Attack used one range for both
+entry and exit. Fixed by disabling root motion, setting loseRange to 30, and adding a 2.5m
+attack exit range. Idle ResetPath() was already correctly scoped to Idle.
 
 ### Locomotion system
 _(fill in once done: grab-based or continuous, what's now on the rig, what was reused from the SDK samples)_

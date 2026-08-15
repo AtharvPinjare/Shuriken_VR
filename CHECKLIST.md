@@ -4,9 +4,9 @@ Read AGENTS.md first if you haven't this session. This file is the live state �
 block below every time you switch tasks or open a fresh Codex session.
 
 ## Right now
-- Last completed: —
+- Last completed: Item 1 (Mutant fix)
 - In progress: —
-- Next: Item 1 (Mutant fix)
+- Next: Item 4 (Locomotion)
 
 ## Run two tracks in parallel, not serial
 **Track A (you, Unity Editor/art)** — items 2, 3, 7 visuals: health bar asset swap, fireball/ice
@@ -28,7 +28,7 @@ Track B item needs a Track A asset first.
 
 ---
 
-## 1. [CODEX] Mutant enemy — rotation / stuck / abrupt animation switching
+## 1. [x] [CODEX] Mutant enemy — rotation / stuck / abrupt animation switching
 
 Check in this order before broad exploration — all three are grounded in bugs this exact
 codebase has already hit once:

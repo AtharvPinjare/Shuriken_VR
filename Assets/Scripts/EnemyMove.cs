@@ -9,6 +9,7 @@ public class EnemyMove : MonoBehaviour
     [SerializeField] float detectionRange = 8f;
     [SerializeField] float loseRange = 10f;
     [SerializeField] float attackRange = 2f;
+    [SerializeField] float attackExitRange = 2.5f;
 
     [Header("Attack")]
     [SerializeField] float attackDamage = 10f;
@@ -105,7 +106,7 @@ public class EnemyMove : MonoBehaviour
                     _animator.SetTrigger("Attack");
                     _playerHealth?.TakeDamage(attackDamage);
                 }
-                if (DistanceToPlayer() > attackRange)
+                if (DistanceToPlayer() > attackExitRange)
                     _currentState = EnemyState.Chase;
                 break;
 

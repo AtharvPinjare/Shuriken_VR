@@ -9,9 +9,14 @@ public class KeyboardGestureProvider : MonoBehaviour, IGestureProvider
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
+        {
+            Debug.Log("F pressed");
             OnFireballGesture?.Invoke();
+        }
 
         if (Input.GetKeyDown(KeyCode.I))
+        {
             OnIceShardGesture?.Invoke();
+        }
     }
 }

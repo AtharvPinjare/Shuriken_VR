@@ -26,6 +26,7 @@ public class SpellCaster : MonoBehaviour
 
     public void HandleFireballGesture()
     {
+        Debug.Log("Gesture received, state: " + GameManager.Instance.CurrentState);
         if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
         if (Time.time - _lastCastTime < castCooldown) return;
         _lastCastTime = Time.time;

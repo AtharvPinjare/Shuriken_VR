@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class FireballProjectile : MonoBehaviour
 {
+    [SerializeField] private AudioClip hitExplosionClip;
+
     private SpellData _data;
 
     public void Initialize(SpellData data)
@@ -27,6 +29,9 @@ public class FireballProjectile : MonoBehaviour
 
         if (_data.ImpactPrefabVFX != null)
             Instantiate(_data.ImpactPrefabVFX, collision.contacts[0].point, Quaternion.identity);
+
+        if (hitExplosionClip != null)
+            AudioSource.PlayClipAtPoint(hitExplosionClip, collision.contacts[0].point);
 
         Destroy(gameObject);
     }

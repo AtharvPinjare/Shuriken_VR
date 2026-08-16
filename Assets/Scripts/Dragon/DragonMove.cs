@@ -29,6 +29,25 @@ public class DragonMove : MonoBehaviour
     [SerializeField] SpellData dragonFireballData;
     [SerializeField] Transform fireballSpawnPoint;
 
+    [Header("Attack — beam (Stage 3, stretch goal; fireball above is the fallback)")]
+    [SerializeField] bool useBeamAttack = false;
+    [SerializeField] GameObject beamVfxPrefab;
+    [SerializeField] float beamDuration = 1.8f; // matches FF_Laser01_Settings.laser_duration default
+    [SerializeField] float beamDamagePerTick = 8f;
+    [SerializeField] float beamTickInterval = 0.3f;
+    [SerializeField] float beamHitRadius = 1.5f;
+    // Empirically measured for VFX Laser Fire.prefab: mesh X-extent(6.98)*2 * startSizeX(8) *
+    // the "Scale" parent node's own localScale(0.2) = world units of beam length per 1.0 of
+    // FF_Laser01_Settings.length_multiplier. Re-measure if the prefab/VFX pack changes.
+    [SerializeField] float beamWorldLengthPerMultiplierUnit = 22.336f;
+
+    bool _beamActive;
+    float _beamRemainingDuration;
+    float _beamTickTimer;
+    Vector3 _beamOrigin;
+    Vector3 _beamDirection;
+    float _beamLength;
+
     public UnityEvent OnDragonDefeated;
 
     Animator _animator;
@@ -86,6 +105,11 @@ public class DragonMove : MonoBehaviour
         // GameManager's InjectPlayerReferences() call lands, this stays Idle
         // and non-crashing instead of throwing on a null _playerTransform.
         if (_playerTransform == null) return;
+
+        // Runs independently of the FSM switch below — a beam's damage window
+        // outlives a single Update tick and shouldn't stop ticking just because
+        // the state happens to change while it's still active.
+        UpdateBeamDamage();
 
         switch (_currentState)
         {
@@ -151,7 +175,8 @@ public class DragonMove : MonoBehaviour
 
         if (_isTelegraphing)
         {
-            FireHomingFireball();
+            if (useBeamAttack) FireBeam();
+            else FireHomingFireball();
             _isTelegraphing = false;
             _attackTimer = attackCooldown;
         }
@@ -185,6 +210,72 @@ public class DragonMove : MonoBehaviour
             rb.AddForce(direction * dragonFireballData.projectileSpeed, ForceMode.VelocityChange);
 
         Debug.Log($"{name}: fired homing fireball at player.");
+    }
+
+    // Beam VFX (Flashy Feather "VFX Laser Fire") is a fire-and-forget particle
+    // burst with no continuous tracking and no hit-detection of its own — aim
+    // and length are set once at cast time, and damage is scripted separately
+    // via IsPlayerInBeamPath(), never physics (OVRCameraRig has no Collider —
+    // see the Stage 2 fireball fix and the note in CLAUDE.md).
+    void FireBeam()
+    {
+        if (beamVfxPrefab == null)
+        {
+            Debug.LogError($"{name}: DragonMove has no beamVfxPrefab assigned — cannot fire beam.", this);
+            return;
+        }
+
+        Vector3 spawnPos = fireballSpawnPoint != null ? fireballSpawnPoint.position : transform.position;
+        Vector3 direction = (_playerTransform.position - spawnPos).normalized;
+        float distance = Vector3.Distance(spawnPos, _playerTransform.position);
+
+        GameObject beam = Instantiate(beamVfxPrefab, spawnPos, Quaternion.LookRotation(direction));
+        if (beam.TryGetComponent(out ff_laser_animations_01.FF_Laser01_Settings settings) && settings.t_main_laser != null)
+        {
+            float lengthMultiplier = Mathf.Max(0.1f, distance / beamWorldLengthPerMultiplierUnit);
+            Vector3 s = settings.t_main_laser.localScale;
+            settings.t_main_laser.localScale = new Vector3(lengthMultiplier, s.y, s.z);
+        }
+        Destroy(beam, beamDuration + 0.2f); // DESTROY_ON_END defaults to false on this prefab
+
+        _beamActive = true;
+        _beamRemainingDuration = beamDuration;
+        _beamTickTimer = 0f;
+        _beamOrigin = spawnPos;
+        _beamDirection = direction;
+        _beamLength = distance;
+
+        Debug.Log($"{name}: fired beam at player.");
+    }
+
+    void UpdateBeamDamage()
+    {
+        if (!_beamActive) return;
+
+        _beamRemainingDuration -= Time.deltaTime;
+        if (_beamRemainingDuration <= 0f)
+        {
+            _beamActive = false;
+            return;
+        }
+
+        _beamTickTimer -= Time.deltaTime;
+        if (_beamTickTimer > 0f) return;
+        _beamTickTimer = beamTickInterval;
+
+        if (IsPlayerInBeamPath())
+        {
+            _playerHealth?.TakeDamage(beamDamagePerTick);
+            Debug.Log($"{name}: beam tick hit player for {beamDamagePerTick}.");
+        }
+    }
+
+    bool IsPlayerInBeamPath()
+    {
+        Vector3 toPlayer = _playerTransform.position - _beamOrigin;
+        float t = Mathf.Clamp(Vector3.Dot(toPlayer, _beamDirection), 0f, _beamLength);
+        Vector3 closestPoint = _beamOrigin + _beamDirection * t;
+        return Vector3.Distance(_playerTransform.position, closestPoint) <= beamHitRadius;
     }
 
     void ResetAllAnimatorTriggers()

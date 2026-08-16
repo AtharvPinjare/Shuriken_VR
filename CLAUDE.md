@@ -68,7 +68,18 @@ Assets\Scenes\Game_Scene.unity        <- THE live gameplay scene. This is what C
 Assets\Scenes\MainMenu.unity          <- separate, new, unrelated to core sprint items
 Assets\Scenes\EnemyNavMesh\, PoseExamples_Test\, Testing\  <- stale test scenes, not ground truth, don't edit
 
-RANGED ENEMY MODEL: not yet located in the tree — [PINJU: fill in exact path here before Item 6]
+Assets\Praneet_assets\FlyingEnemy\Vampire A Lusth.prefab   <- RANGED ENEMY (Item 6). Flying vampire
+  mage, own scripts FlyingMageEnemy.cs (movement/attack) + EnemySpellProjectile.cs (on
+  EnemySpell.prefab). Already shipped with Health.cs + EnemyHealthBarUI/BillboardUI attached
+  before Item 6 integration started — see Systems log "Ranged enemy" for what was actually
+  broken (material refs, no Animator controller/clips, Apply Root Motion, tag-based hit
+  detection) vs already correct (Health wiring, health bar).
+Assets\Praneet_assets\FlyingEnemy\EnemySpell.prefab         <- ranged enemy's projectile prefab.
+Assets\Praneet_assets\FlyingEnemy\Animations\VampireController.controller  <- Cast/Die triggers,
+  already had Any State transitions wired; Item 6 added the missing AnimationClips.
+Assets\ScriptableObjects\Waves\Wave_3.asset                 <- CREATED (Item 6). enemyPrefab =
+  Vampire A Lusth, enemyCount=3, spawnInterval=10. Appended to WaveManager's _waves list —
+  ranged enemies are wave 3, after the two Mutant waves.
 Assets\Scripts\Dragon\DragonMove.cs             <- CREATED (Stage 1+2). Idle/Chase/Attack/Dead enum-switch.
 Assets\FourEvilDragonsHP\Animators\SouleaterCTRL.controller  <- Stage 1 added 4 Trigger params
   (TriggerLoiter/TriggerChase/TriggerAttack/TriggerDead) + Any State transitions to
@@ -84,7 +95,8 @@ Assets\Prefab\Fireball\DragonFireball.prefab    <- CREATED (Stage 2). True Unity
 Assets\ScriptableObjects\Spells\DragonFireballData.asset  <- CREATED (Stage 2). SpellData:
   damage=20, projectileSpeed=15, ImpactPrefabVFX=Explosion (reused, no new VFX),
   projectilePrefab=DragonFireball.prefab.
-Assets\[fill in after import]\...               <- [PINJU: beam VFX path, once imported, before Stage 3]
+Assets\Flashy Feather Assets\Lasers - Sample\Prefabs\VFX Laser Fire.prefab  <- USED (Stage 3
+  beam VFX). Pack also has "VFX Laser Water"/"Hit Laser Fire"/"Hit Laser Water" variants, unused.
 ```
 
 ## Known discrepancies — confirm before Claude touches related files
@@ -143,12 +155,15 @@ Redesigned from the original "wire it up like a ground enemy" approach — do no
   VFX source: see Real project file paths once imported. If beam doesn't converge within a
   session's crunch-mode cutoff, ship fireball-only — pre-agreed ship-line fallback, not a
   failure.
+  DONE — see Systems log "Dragon enemy — Stage 3." Beam replaces fireball as Attack's default
+  (`useBeamAttack` bool on DragonMove, flip to false for an instant fireball-only fallback, no
+  code changes needed).
 - On Health reaching zero: play whatever death clip Unity MCP confirms exists on the Animator
   (don't assume a clip name), then invoke a public UnityEvent OnDragonDefeated. Consumer of
   that event is not yet decided — expose the hook, don't assume what it triggers.
 - Build order is staged: Stage 1 (flight + trigger skeleton, no attack) -> Stage 2 (homing
   fireball + OnDragonDefeated) -> Stage 3 (beam, optional). Each stage MCP-verified working in
-  Play mode before the next starts. Prompts live in CHECKLIST.md Item 5.
+  Play mode before the next starts. Prompts live in CHECKLIST.md Item 5. All three stages done.
 
 ## Zones
 
@@ -165,13 +180,16 @@ components, or camera/head anchor configuration. If it's ambiguous whether a rig
 movement-related or gesture-related, stop and ask rather than guessing.
 
 **YELLOW — additive only, never rename/delete an existing public member:** Health.cs,
-GameManager.cs, WaveManager.cs, SpellCaster.cs, EnemyMove.cs, SpellData.cs, WaveData.cs.
+GameManager.cs, WaveManager.cs, SpellCaster.cs, EnemyMove.cs, SpellData.cs, WaveData.cs,
+WaveSpawner.cs (added Item 6 — its spawn loop now also checks for FlyingMageEnemy alongside
+EnemyMove; treat it with the same additive-only care even though it wasn't in the original list).
 Reason: Unity serializes Inspector wiring by field name — a rename silently orphans every
 prefab reference to that field.
-FireballProjectile.cs shooter-exclusion pattern (added in Dragon Stage 2, reuse for Item 6,
-don't reinvent): Health.cs now has a Faction enum + faction field (Player/Enemy).
-FireballProjectile.cs has a shooterFaction field checked in ResolveHit() before applying damage.
-Item 6 must reuse these exact names, not add a second mechanism..
+Health.Faction shooter-exclusion pattern (added Dragon Stage 2, reused Item 6): FireballProjectile.cs
+has a shooterFaction field checked before applying damage. Item 6's ranged enemy shipped with its
+own EnemySpellProjectile.cs (not FireballProjectile.cs) — per the "own script still checks
+Health.Faction" rule, it independently implements the identical shooterFaction-vs-Health.faction
+guard rather than inventing a second mechanism. Any future projectile script should do the same.
 
 **GREEN:** new scripts, new SO assets, new prefabs, new UI following the existing
 BillboardUI / EnemyHealthBarUI / WaveCounterUI / CooldownIndicatorUI patterns, VFX, arena
@@ -316,8 +334,149 @@ GameManager's existing DEFEAT path fired correctly. OnDragonDefeated fires exact
 dragon's own Health is driven to zero (confirmed via a temporary listener), and a second
 TakeDamage call afterward does not re-fire it (Health.IsDead guard).
 
-### Ranged enemy
-_(fill in once done: attack implementation, friendly-fire guard used)_
+### Dragon enemy — Stage 3 (beam attack, stretch goal, DragonSoulEater/Blue)
+VFX: `Assets\Flashy Feather Assets\Lasers - Sample\Prefabs\VFX Laser Fire.prefab`. The pack's
+only script, `FF_Laser01_Settings`, is a fire-and-forget config holder (public fields only, no
+methods) — it scales `t_main_laser.localScale.x` by its `length_multiplier` field and configures
+particle burst timings once in Awake(), then does nothing further (no tracking, no hit-detection,
+no auto-destroy since `DESTROY_ON_END` defaults false). Not a real "beam-control script" in the
+sense of an API to call — aim/length are one-shot at instantiation, so DragonMove sets both
+itself: instantiate at the spawn point with `Quaternion.LookRotation(direction)`, then
+immediately overwrite `t_main_laser.localScale.x` (Awake's own scaling already ran by the time
+Instantiate() returns, so this is a full override, not an additional multiply). World length
+per 1.0 of `length_multiplier` was empirically measured at ~22.336 units (mesh X-extent 6.98*2 *
+startSize.x 8 * the "Scale" parent node's own 0.2 localScale) — re-measure if the prefab changes.
+`DragonMove` calls `Destroy(beam, beamDuration + 0.2f)` itself since `DESTROY_ON_END` is off.
 
-### Ranged enemy
-_(fill in once done: attack implementation, friendly-fire guard used)_
+Damage: per Pinju's note (added to this doc after Stage 2), OVRCameraRig has no Collider
+anywhere, so beam damage — like the Stage 2 fireball fix — cannot use physics at all. Implemented
+as a scripted line-check: capture beam origin/direction/length once at cast time, then each tick
+(`beamTickInterval`, default 0.3s) compute the player's perpendicular distance to that fixed line
+segment and call `_playerHealth.TakeDamage()` directly if within `beamHitRadius`. This ticks for
+`beamDuration` (1.8s, matching the VFX default) independently of the Attack state's own
+telegraph/cooldown timer — `UpdateBeamDamage()` runs unconditionally every Update() frame so a
+beam's damage window isn't cut short by a state change mid-tick.
+
+Beam REPLACES the fireball as Attack's default (`useBeamAttack = true` on the live scene
+instance) — read well in Play mode testing. Fireball path is untouched and fully intact:
+`UpdateAttack()` just branches on `useBeamAttack`, so flipping that one bool back to false in the
+Inspector reverts to Stage 2 behavior instantly, no code changes needed, per the "don't delete
+the fireball path" instruction. Verified both ways: beam-on cycle dealt 3x(6 ticks x 8dmg)=144
+total over ~7.5s before player death; beam-off cycle produced the identical Stage 2 fireball
+console output as before, confirming zero regression from adding the branch.
+
+Investigated-then-ruled-out false alarm during MCP-verify: querying a live beam's transform via
+Unity MCP several tool-calls after it fired showed position/scale reset to defaults — looked like
+a real bug (beam rendering at world origin). Added temporary inline Debug.Log calls immediately
+after Instantiate/override and confirmed position+scale were correct at spawn time
+(`(19.32, 6.97, 4.73)`, scale `0.31`, exactly as computed). The "reset" values were from querying
+an object AFTER its own `Destroy(beam, 2.0f)` had already fired — MCP tool round-trip latency
+exceeded the beam's own lifetime, so later queries were reading a torn-down object's stale
+field values, not the live object's actual state. Not a bug; a lesson for future verification —
+when polling something with a short lifetime, check immediately or don't trust a "wrong" reading
+without first confirming you're not looking at a destroyed object.
+
+MCP-verified in Play mode (WaveSpawner temporarily disabled for isolated testing only, restored
+after): beam fired on the telegraph/cooldown cadence, 6 damage ticks per beam at 8dmg each,
+dragon's own Health unaffected across the whole test (self-damage is structurally impossible —
+damage is a direct `_playerHealth.TakeDamage()` call, never a generic Health lookup), full
+console output captured and reported in chat.
+
+### Dragon enemy — disabled in Game_Scene for the submitted build
+All three stages (flight/trigger skeleton, homing fireball + OnDragonDefeated, beam attack) are
+implemented and MCP-verified working, per the Stage 1/2/3 entries above — the system itself is
+NOT abandoned or incomplete. Time ran out to also integrate/polish the other 3 dragon types and
+give the encounter a full multi-system playtest pass, so `Dragon_SoulEater_Blue`,
+`Dragon_LoiterVolume`, and `Dragon_EngageTrigger` were disabled (SetActive false, not deleted)
+in `Game_Scene` for this submission — a scene-presence change only. `DragonMove.cs`,
+`FireballProjectile.cs`'s homing/faction additions, `Health.cs`'s Faction field,
+`DragonFireball.prefab`, `DragonFireballData.asset`, and `SouleaterCTRL.controller`'s triggers
+are all untouched and fully intact. Re-enabling is a one-step reversal (SetActive true on those
+3 objects) — no code or asset changes needed.
+
+Checked GameManager.cs's `dragons[]` handling before disabling (per the "don't just clear the
+reference and assume" instruction): `Start()` already guards with `if (dragon != null)`, so a
+null array entry is safely skipped. A reference to a *disabled* (non-null) object still calls
+`dragon.InjectPlayerReferences(...)`, but that's a plain C# method call setting two private
+fields — it doesn't require the GameObject to be active, throws nothing, and since the disabled
+DragonMove's Update() never runs, those fields are simply never read. Verified via a full Play
+mode playthrough: zero new console errors, WaveManager/WaveSpawner/Mutant combat all behave
+exactly as before dragon work started.
+
+### Ranged enemy (Vampire A Lusth flying mage, Item 6)
+Asset audited before touching anything (Phase 1). It arrived much further integrated than a raw
+import: `Vampire A Lusth.prefab` already carried `Health.cs` (faction=Enemy, correct default)
+with `OnDeath` already wired to `FlyingMageEnemy.TakeDamage()` (misleadingly named — takes no
+damage amount, it's a death handler: VFX, disables collider, plays Die, self-destructs), and its
+`HealthBar` child already had `EnemyHealthBarUI`/`BillboardUI` attached and self-wiring
+correctly. No parallel health system, nothing to remove there.
+
+Four real bugs found and fixed:
+1. **Purple/white rendering.** The `Vampire` child's SkinnedMeshRenderer had broken mesh+material
+   GUID references (traced in the prefab's raw YAML — pointed at GUIDs matching no current
+   asset, left over from before the FBX was reimported). Reassigned to the FBX's current mesh
+   sub-asset and `Vampire_MAT1.mat` (Pinju's choice) for both material slots. `Vampire_MAT1.mat`
+   itself had no Base Map/Emission Map assigned (`_BaseColor` was plain white) — assigned
+   `Vampire_diffuse.png`/`Vampire_emission.png` (the project already had duplicate `" 1"` copies
+   of these from an earlier fix attempt; picked the originals since they're identical in
+   size/format/sRGB, no reason to prefer the duplicates) and set `_EmissionColor` to white so the
+   emission map isn't black-multiplied to invisible.
+2. **No Animator wired at all.** Prefab's Animator component had `runtimeAnimatorController=null`.
+   Assigned `VampireController.controller`. That controller (unlike DragonNightmare's original
+   empty one, closer to SouleaterCTRL's shape) already had `Cast`/`Die` Trigger parameters with
+   Any State transitions correctly wired to the matching states — but every state had `motion=
+   null`, no AnimationClip assigned despite matching FBX files sitting right there. Wired
+   `mixamo_com` <- "Hanging Idle.fbx" clip (picked over the flatter "Idle.fbx" — a hover/float
+   pose reads better for a non-grounded flying enemy), `Standing 1H Magic Attack 01` <- its
+   matching FBX clip, `VampireBackwardDeath` <- its matching FBX clip, on both the Base and
+   UpperBody layers where each state exists.
+3. **Apply Root Motion was enabled** — same bug class as the original Mutant fix. Caused the
+   enemy to keep drifting via animation-baked root motion even after the
+   `GameManager.CurrentState != Playing` freeze guard (added during this integration, same
+   pattern as EnemyMove/DragonMove) correctly stopped the script's own movement logic. Looked
+   like the freeze guard wasn't working; it was working, root motion was fighting it. Fixed by
+   disabling Apply Root Motion on the prefab's Animator, verified by re-checking position was
+   bit-identical across repeated polls after Defeat (previously it visibly crept a few
+   centimeters between polls).
+4. **Broken/crashing hit detection.** `EnemySpellProjectile.cs` used `OnCollisionEnter`/
+   `OnTriggerEnter` + `CompareTag(targetTag)`, and `targetTag` was set to `"Collide"` on the
+   prefab — not a registered project tag (`Untagged/Respawn/Finish/EditorOnly/MainCamera/Player/
+   GameController`). `CompareTag` against an undefined tag throws `UnityException`, so this would
+   have crashed on its first collision with anything. Independent of that, OVRCameraRig has no
+   Collider (per the Known Discrepancies note added during Dragon Stage 2), so collision-based
+   detection could never fire against the player regardless. Rewrote around a shared
+   `ResolveHit()` (mirrors `FireballProjectile.cs`'s pattern): a `Health.Faction shooterFaction`
+   field (default Enemy) guards against damaging same-faction targets on physical collision, plus
+   a `FixedUpdate()` proximity check against a `target` Transform (set by `FlyingMageEnemy` to the
+   injected player Transform at spawn) for the player-hit case specifically, since it has no
+   Collider to collide with at all.
+
+FSM decision: kept `FlyingMageEnemy.cs`'s existing continuous-loop behavior (maintain
+`preferredRange` from the player, fire on a flat cooldown) rather than refactoring into the
+Idle/Chase/Attack/Dead enum-switch convention `EnemyMove`/`DragonMove` use — Pinju's call, fastest
+path that certainly works; the loop already functionally covers chase+attack, and Dead is already
+handled via the existing `isDead` flag. No telegraph delay added either (Pinju: "leave it") —
+Item 6 doesn't carry Dragon's VR-comfort mandate.
+
+Player references: replaced the asset's raw public `player` field with private
+`_playerTransform`/`_playerHealth` + `InjectPlayerReferences()`, matching EnemyMove/DragonMove
+exactly. Also added `initialHoverHeight` (spawns elevated above its spawn point instead of
+hovering at ground level, since Mutant spawn points are ground-level and this is a flier).
+
+Spawn method (Pinju's call): wave-spawned only, not manually placed. `WaveSpawner.cs`'s spawn
+loop was hard-typed to `GetComponent<EnemyMove>()` — added an `else if FlyingMageEnemy` branch
+(additive) so ranged enemies also get `InjectPlayerReferences()` at spawn. Created
+`Wave_3.asset` (enemyPrefab=Vampire A Lusth, enemyCount=3, spawnInterval=10) and appended to
+WaveManager's `_waves` list — ranged enemies are their own wave, after the two Mutant waves, not
+mixed into Wave_1/Wave_2.
+
+MCP-verified in Play mode (WaveSpawner temporarily disabled/re-enabled around manual test spawns
+only, to avoid background Mutant-wave interference — restored and scene re-saved after): spawned
+via a direct call to the real `WaveSpawner.SpawnWave(Wave_3, ...)` code path (not bypassed),
+placed a standalone Mutant nearby — zero friendly-fire damage to it or to the vampire itself
+across the whole test. Player HP ticked down in exact 15-damage steps from repeated hits,
+existing DEFEAT path fired correctly, vampire froze in place after Defeat (confirming the root
+motion fix). Health bar verified separately: direct 40-damage test dropped its Slider from 1.0
+to 0.6, matching 60/100 HP exactly. Death sequence verified: `Health.TakeDamage()` to 0 disabled
+its Collider and set `IsDead`, object self-destructed after the expected delay. Zero new console
+errors throughout (only pre-existing, unrelated XR/OVR sample-script noise).

@@ -4,9 +4,13 @@ Read CLAUDE.md first if you haven't this session. This file is the live state �
 block below every time you switch tasks or open a fresh Claude session.
 
 ## Right now
-- Last completed: Item 5 Stage 2 (homing fireball + OnDragonDefeated — DragonSoulEater/Blue)
+- Last completed: Item 6 (Ranged enemy — Vampire A Lusth flying mage). Wave-spawned only
+  (Wave_3), MCP-verified: no friendly fire, health bar reflects damage, DEFEAT/death sequences
+  correct, zero new console errors. See CLAUDE.md Systems log "Ranged enemy" for the 4 real bugs
+  found and fixed along the way.
 - In progress: —
-- Next: Item 5 Stage 3 (beam, stretch goal) or Item 6 (Ranged enemy)
+- Next: all Track B items (1, 4, 5, 6) done. Remaining: Item 7 (environment/lighting, Pinju
+  primary) and Item 8 (hand tracking optimization/profiling/build settings, Pinju).
 
 ## Run two tracks in parallel, not serial
 **Track A (you, Unity Editor/art)** — items 2, 3, 7 visuals: health bar asset swap, fireball/ice
@@ -117,7 +121,10 @@ constraint — hand-tracking/gesture wiring untouched.
 
 ---
 
-## 5. [Claude] Dragon enemy — staged (DragonSoulEater/Blue, other 3 types after)
+## 5. [x] [Claude] Dragon enemy — staged (DragonSoulEater/Blue, other 3 types after)
+**All 3 stages implemented and MCP-verified. Disabled (not deleted) in Game_Scene for this
+submission — see CLAUDE.md Systems log "Dragon enemy — disabled in Game_Scene for the submitted
+build" for the full reasoning and the one-step re-enable.**
 Design is locked in CLAUDE.md under "Dragon encounter design" — read that before running any
 stage below. Run sequentially, verify each in Play mode before starting the next. Update this
 block's status and CLAUDE.md's Systems log after each stage.
@@ -227,14 +234,48 @@ Same telegraph-delay and no-instant-damage VR constraints as Stage 2.
 MCP-verify: compile clean, Play mode, report actual Console output.
 ```
 
+**[x] Stage 3 DONE — DragonSoulEater/Blue.** VFX:
+`Assets\Flashy Feather Assets\Lasers - Sample\Prefabs\VFX Laser Fire.prefab`. The pack's one
+script (`FF_Laser01_Settings`) has no public API to call — it's a fire-and-forget config holder
+that scales/configures itself once in `Awake()`. No hit-detection in the pack at all, so wrote a
+scripted line-proximity check (per Pinju's note: OVRCameraRig has no Collider, physics-based
+detection cannot work — same lesson as the Stage 2 fireball fix) that ticks damage against the
+player's Transform directly, independent of the Attack state's telegraph/cooldown timer so a
+beam's damage window survives a mid-tick state change. `useBeamAttack` bool on `DragonMove`
+(currently `true`) switches Attack between beam and fireball — flip to `false` for an instant,
+code-free fallback to Stage 2 behavior; verified both paths work with zero regression.
+MCP-verified in Play mode (WaveSpawner temporarily disabled for isolated testing, restored
+after): beam fires on cadence, 6 damage ticks/beam at 8dmg each, dragon's own Health never
+affected (damage is a direct call to the player's injected Health reference, not a generic
+lookup — self-damage is structurally impossible). One false alarm investigated and ruled out:
+a beam's transform read back as reset-to-origin several tool-calls after firing — turned out to
+be querying an already-`Destroy()`'d object (2s lifetime, tool round-trip exceeded it), not a
+real positioning bug; confirmed via inline logging that position/scale are correct at spawn
+time. Full console output reported in chat. To manually test: get within ~8m of the dragon
+horizontally near its altitude band, watch it telegraph then fire a beam that visibly reaches
+you, taking tick damage while you stay in its path.
+
 Deliverable for Item 5 overall: at least one dragon type with Stage 1+2 confirmed via MCP-verified
 Play mode test (Stage 3 optional). Other 3 types wired as prefab/data variants once this one is
-solid — not before.
+solid — not before. **All three stages done for DragonSoulEater/Blue — disabled (SetActive
+false, not deleted) in Game_Scene for this submission due to time constraints on further
+multi-type integration/polish. Not abandoned: mechanics are intact and verified for the report,
+and re-enabling for a future session is a one-step reversal (see CLAUDE.md Systems log).**
 Do not touch Assets\FourEvilDragonsHP\Scene\.
 
 ---
 
-## 6. [Claude] Ranged enemy — spells, VFX, health bar
+## 6. [x] [Claude] Ranged enemy — spells, VFX, health bar
+**DONE — Vampire A Lusth flying mage (`Assets\Praneet_assets\FlyingEnemy\`), wave-spawned as
+Wave_3 (after the two Mutant waves). MCP-verified: no friendly fire, health bar reflects damage,
+DEFEAT/death sequences correct, zero new console errors. Full writeup in CLAUDE.md Systems log
+"Ranged enemy" — the asset arrived already carrying Health.cs + EnemyHealthBarUI/BillboardUI
+(no parallel health system to remove), but had 4 real bugs: broken mesh/material references
+(purple/white render), no Animator controller or clips wired at all, Apply Root Motion fighting
+the script's own movement (same bug class as the original Mutant fix), and a tag-based hit-check
+that would have thrown on first collision (tag didn't exist) and couldn't have hit the player
+anyway (no Collider). All fixed; see the log for specifics.**
+
 Health bar: reuse the existing EnemyHealthBarUI/BillboardUI Canvas prefab directly — drop-in,
 no new code expected.
 **Trap:** don't let Claude reuse FireballProjectile.cs untouched for enemy-fired projectiles. It

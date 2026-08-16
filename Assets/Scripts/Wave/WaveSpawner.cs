@@ -46,13 +46,18 @@ public class WaveSpawner : MonoBehaviour
             }
 
             EnemyMove enemyMove = enemy.GetComponent<EnemyMove>();
-            if (enemyMove == null)
+            FlyingMageEnemy flyingEnemy = enemy.GetComponent<FlyingMageEnemy>();
+            if (enemyMove != null)
             {
-                Debug.LogError($"Spawned enemy '{enemy.name}' has no EnemyMove component — it will spawn static.");
+                enemyMove.InjectPlayerReferences(_playerTransform, _playerHealth);
+            }
+            else if (flyingEnemy != null)
+            {
+                flyingEnemy.InjectPlayerReferences(_playerTransform, _playerHealth);
             }
             else
             {
-                enemyMove.InjectPlayerReferences(_playerTransform, _playerHealth);
+                Debug.LogError($"Spawned enemy '{enemy.name}' has no EnemyMove or FlyingMageEnemy component — it will spawn static.");
             }
 
             yield return new WaitForSeconds(waveData.spawnInterval);

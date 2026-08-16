@@ -9,6 +9,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Health playerHealth;
     [SerializeField] private WaveManager waveManager;
     [SerializeField] private WaveSpawner waveSpawner;
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private DragonMove[] dragons;
 
     public GameState CurrentState { get; private set; } = GameState.Playing;
 
@@ -21,6 +23,12 @@ public class GameManager : MonoBehaviour
     {
         playerHealth.OnDeath.AddListener(HandlePlayerDeath);
         waveManager.OnAllWavesCleared.AddListener(HandleVictory);
+
+        foreach (var dragon in dragons)
+        {
+            if (dragon != null)
+                dragon.InjectPlayerReferences(playerTransform, playerHealth);
+        }
     }
 
     private void HandlePlayerDeath()

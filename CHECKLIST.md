@@ -1,19 +1,19 @@
 # Shuriken VR — Sprint Checklist (12h)
 
-Read AGENTS.md first if you haven't this session. This file is the live state — update the
-block below every time you switch tasks or open a fresh Codex session.
+Read CLAUDE.md first if you haven't this session. This file is the live state — update the
+block below every time you switch tasks or open a fresh Claude session.
 
 ## Right now
-- Last completed: Item 4 (Continuous air-pull locomotion)
+- Last completed: Item 5 Stage 2 (homing fireball + OnDragonDefeated — DragonSoulEater/Blue)
 - In progress: —
-- Next: Item 5 (Dragon enemy)
+- Next: Item 5 Stage 3 (beam, stretch goal) or Item 6 (Ranged enemy)
 
 ## Run two tracks in parallel, not serial
 **Track A (you, Unity Editor/art)** — items 2, 3, 7 visuals: health bar asset swap, fireball/ice
 FBX + hit VFX, environment art.
-**Track B (Codex, C#/systems)** — items 1, 4, 5, 6: bug fix, locomotion, dragon, ranged enemy.
+**Track B (Claude, C#/systems)** — items 1, 4, 5, 6: bug fix, locomotion, dragon, ranged enemy.
 
-These touch almost entirely different files. Start Codex on Item 1 now, and while it runs, go
+These touch almost entirely different files. Start Claude on Item 1 now, and while it runs, go
 do Item 2 yourself — don't sit and watch it work. Sync points are called out below where a
 Track B item needs a Track A asset first.
 
@@ -28,7 +28,7 @@ Track B item needs a Track A asset first.
 
 ---
 
-## 1. [x] [CODEX] Mutant enemy — rotation / stuck / abrupt animation switching
+## 1. [x] [Claude] Mutant enemy — rotation / stuck / abrupt animation switching
 
 Check in this order before broad exploration — all three are grounded in bugs this exact
 codebase has already hit once:
@@ -62,7 +62,7 @@ Confirm smooth rotation, consistent chase, no animation flicker.
 
 ## 2. [x] [PINJU] Enemy health bar asset swap
 Slots into the existing EnemyHealthBarUI.cs / BillboardUI.cs Canvas pattern — no code changes
-needed if the new asset is still a Slider. If its structure is different, flag before Codex
+needed if the new asset is still a Slider. If its structure is different, flag before Claude
 touches EnemyHealthBarUI.cs.
 
 ---
@@ -73,7 +73,7 @@ script changes expected if collider/rigidbody setup carries over onto the new mo
 
 ---
 
-## 4. [x] [CODEX] Locomotion — continuous air-pull (Drakheir-style)
+## 4. [x] [Claude] Locomotion — continuous air-pull (Drakheir-style)
 Not anchor-based climbing — nothing needs to exist to grab. While a hand is gripping, track its
 world-position delta frame to frame; move the rig by the inverse of that delta. Pull your hand
 toward you, you move forward; push it away, you move back. Both hands work simultaneously.
@@ -83,7 +83,7 @@ This is a movement input, not a spell-cast gesture — it must NOT route through
 or GestureManager (locked, casting-only). Grip detection should be its own thing: check first
 whether IHand/HandRef already exposes a pinch/grab-strength value to use directly, rather than
 building new pose-recognition wiring for it.
-Rig exception applies (see AGENTS.md). Set your own time cutoff before starting — write it in
+Rig exception applies (see CLAUDE.md). Set your own time cutoff before starting — write it in
 the ship-line section above. Note: pure air-pull locomotion (no physical anchor) is more prone
 to motion sickness for some players than anchor-based climbing — not worth solving tonight,
 just don't be surprised if it comes up in playtesting.
@@ -117,63 +117,165 @@ constraint — hand-tracking/gesture wiring untouched.
 
 ---
 
-## 5. [CODEX] Dragon enemy — 4 types, always flying
-Assets already live at Assets\FourEvilDragonsHP\Prefab\{DragonNightmare,DragonSoulEater,
-DragonTerrorBringer,DragonUsurper}\ — each folder is one type, color subfolders inside it are
-reskins, not separate types. Do not touch Assets\FourEvilDragonsHP\Scene\ — those are the asset
-pack's own demo scenes, reference only.
-Confirmed: dragons always fly, never NavMeshAgent — direct transform/physics-based flight.
+## 5. [Claude] Dragon enemy — staged (DragonSoulEater/Blue, other 3 types after)
+Design is locked in CLAUDE.md under "Dragon encounter design" — read that before running any
+stage below. Run sequentially, verify each in Play mode before starting the next. Update this
+block's status and CLAUDE.md's Systems log after each stage.
 
-Prompt:
+**Target swapped mid-Stage-1: DragonNightmare/Blue -> DragonSoulEater/Blue.** All 4
+DragonNightmare colors share an Animator Controller with zero flight/hover clips (ground-
+locomotion pack only) — confirmed via Unity MCP before writing any state logic, per the prompt
+below. DragonSoulEater/TerrorBringer/Usurper all have real flight clips; SoulEater was picked
+because its controller also has a "Fly Fireball Shoot" clip matching the Stage 2 attack. Use
+SoulEater/TerrorBringer/Usurper for the other 3 types later, not Nightmare.
+
+Prompt (Stage 1 — flight + trigger skeleton, no attack):
 ```
-Wire up the dragon enemy using Assets\FourEvilDragonsHP\Prefab\DragonNightmare\Blue.prefab as
-the first reference type. Dragons always fly — do not use NavMeshAgent, use direct
-transform/physics-based flight toward/around the player, matching the pattern other enemies use
-for FSM structure (reuse EnemyMove's Idle/Chase/Attack/Dead enum-switch if it fits) but not for
-movement.
-Reuse Health.cs unmodified for damage/death — this is Assets\Scripts\Health.cs specifically, NOT
-Assets\Scripts\ProgBasics\HealthComponent.cs, which is unrelated legacy code, ignore it entirely.
-Once DragonNightmare/Blue is fully working, wire the other 3 types (DragonSoulEater,
-DragonTerrorBringer, DragonUsurper) as data/prefab variants of the same pattern — color variants
-within each type just need the model swapped, not new logic.
-Deliverable: at least DragonNightmare confirmed fully working; other 3 types wired via the same
-pattern.
-Test: spawn each type manually in Game_Scene.unity, confirm damage/death/flight behaviour, check
-console for errors.
+Build Stage 1 of the dragon encounter per CLAUDE.md's "Dragon encounter design" section, for
+Assets\FourEvilDragonsHP\Prefab\DragonNightmare\Blue.prefab only.
+
+Before writing state logic: inspect the prefab's Animator via Unity MCP, list available clips,
+tell me what's there before deciding how to drive them.
+
+Idle = ambient loiter inside a bounding volume I'll place (serialized field, don't hardcode).
+Chase = triggered by a separate engage-trigger volume I'll place (serialized field), flies
+toward the player within an altitude band, never diving to eye-level.
+Attack = placeholder, log only, no movement.
+Dead = Health.cs (Assets\Scripts\Health.cs, not the ProgBasics legacy one), play whatever death
+clip you found, disable movement.
+
+Player references via the existing InjectPlayerReferences() pattern only — no
+GetComponentInChildren/GetComponentsInChildren.
+
+MCP-verify: compile clean, Play mode, report actual Console output through Idle->Chase->
+Attack(log). List exactly which fields need Inspector assignment.
 ```
+
+**[x] Stage 1 DONE — DragonSoulEater/Blue.** Files: created
+`Assets\Scripts\Dragon\DragonMove.cs`; additive fields on `Assets\Scripts\GameManager.cs`
+(`playerTransform`, `dragons[]`, wired in `Start()`); added 4 Trigger params + Any State
+transitions to `Assets\FourEvilDragonsHP\Animators\SouleaterCTRL.controller` (shared by all 4
+SoulEater colors — stripped its stale auto-cycling demo transitions on the 3 states we drive).
+Scene: `Dragon_SoulEater_Blue` + `Dragon_LoiterVolume` + `Dragon_EngageTrigger` added to
+Game_Scene, wired to GameManager. Real bug found+fixed: a stuck Animator Trigger (fired while
+already on its own target state, blocked by canTransitionToSelf=false) silently ate a later
+legitimate trigger — fixed by resetting all triggers before arming the new one; watch for the
+same class of bug in Stage 2/3 and Item 6 if they also drive multiple Animator states via
+triggers. MCP-verified full Idle->Chase->Attack(log)->Dead in Play mode; console output and
+inspector-field list reported in chat. To manually test: enter Play mode, walk/teleport the
+player into `Dragon_EngageTrigger`'s bounds, watch the dragon fly toward you and level off in
+the altitude band, then approach within 8m to see the Attack placeholder log fire every 2s.
+
+Prompt (Stage 2 — homing fireball + defeat hook, only after Stage 1 verified):
+```
+Build Stage 2 per CLAUDE.md — dragon's Attack state fires a homing projectile instead of
+logging, and death exposes a continue hook.
+
+Add generic homing fields to FireballProjectile.cs (isHoming, turnRateDegreesPerSecond, target)
+— additive only, per its YELLOW-zone rule, since Item 6 will also need to extend this file.
+Create DragonFireball.prefab as a variant with isHoming=true, reusing the existing Item 3
+fireball VFX — no new VFX. Steering re-targets the player's CURRENT position every FixedUpdate,
+capped turn rate. Add a shooter-exclusion guard on the projectile (owner/faction field) so it
+can't damage the dragon or other enemies — make this generic, Item 6 will reuse it, don't force
+me to build a second one.
+
+Telegraph delay (Inspector-tunable) before firing, non-negotiable VR fairness requirement.
+
+On Health reaching zero: invoke public UnityEvent OnDragonDefeated, consumer TBD, just expose it.
+
+MCP-verify: compile clean, Play mode, trigger Attack, confirm homing works, only player Health
+takes damage, OnDragonDefeated fires exactly once at zero Health. Report actual Console output.
+```
+
+**[x] Stage 2 DONE — DragonSoulEater/Blue.** Files: `DragonMove.cs` Attack state rewritten to
+telegraph->fire->cooldown loop; `Assets\Scripts\FireballProjectile.cs` gained isHoming/
+turnRateDegreesPerSecond/target, homingHitRadius, shooterFaction (Health.Faction-based friendly-
+fire guard), and a shared ResolveHit() used by both physics collision and homing proximity;
+`Assets\Scripts\Health.cs` gained a Faction enum + field (generic, reused by Item 6); created
+`Assets\Prefab\Fireball\DragonFireball.prefab` (true Prefab Variant of Fireball.prefab, not a
+disconnected copy) and `Assets\ScriptableObjects\Spells\DragonFireballData.asset`.
+Real bug found+fixed during MCP-verify: every fireball hit the ground instead of the player —
+OVRCameraRig has no Collider (every existing damage source hits the player via direct
+Health.TakeDamage(), never physics), so OnCollisionEnter could never fire against it. Fixed with
+a proximity-based hit resolution in FixedUpdate for the homing case, entirely in
+FireballProjectile.cs — did not touch the player rig (red-zone for this task). Item 6 will hit
+this same wall if its ranged-enemy projectile ever targets the player by homing/proximity;
+straight-line physics-only projectiles aimed at the player have the same problem if the player
+truly has no Collider anywhere — confirm before assuming OnCollisionEnter will fire.
+Friendly-fire guard verified twice: a fireball spawned with a guaranteed Collider overlap on a
+live Mutant did zero damage and wasn't destroyed (passed through); real gameplay across 3 live
+Mutants + the dragon itself, zero unintended damage. MCP-verified in Play mode: 5 fireballs
+fired on cadence, player HP ticked 100->80->60->40->20->0 exactly (20 dmg/hit), existing DEFEAT
+path fired correctly, OnDragonDefeated fired exactly once on the dragon's own death and did not
+re-fire on a second TakeDamage call. Full console output reported in chat. To manually test:
+enter Play mode, get within ~8m of the dragon horizontally while it's near its altitude band —
+watch it telegraph, fire a curving fireball that tracks you, repeat every ~2.5s.
+
+Prompt (Stage 3 — beam, stretch goal, only after Stage 1+2 verified):
+```
+Only start after Stage 1 and Stage 2 are both confirmed working. Set your own cutoff first
+(CLAUDE.md crunch-mode rule) — if this doesn't converge in that window, git reset --hard to the
+last commit and confirm the Stage 2 fireball-only version still works. That's a complete pass.
+
+VFX: [path filled in after import — see CLAUDE.md]. Use the pack's own bundled beam-control
+script if it has one, don't write LineRenderer/damage-tick logic from scratch.
+
+Beam supplements or replaces the fireball in Attack state — your call based on how it reads in
+Play mode, but do not delete the fireball path, it's the fallback.
+Same telegraph-delay and no-instant-damage VR constraints as Stage 2.
+
+MCP-verify: compile clean, Play mode, report actual Console output.
+```
+
+Deliverable for Item 5 overall: at least one dragon type with Stage 1+2 confirmed via MCP-verified
+Play mode test (Stage 3 optional). Other 3 types wired as prefab/data variants once this one is
+solid — not before.
+Do not touch Assets\FourEvilDragonsHP\Scene\.
 
 ---
 
-## 6. [CODEX] Ranged enemy — spells, VFX, health bar
+## 6. [Claude] Ranged enemy — spells, VFX, health bar
 Health bar: reuse the existing EnemyHealthBarUI/BillboardUI Canvas prefab directly — drop-in,
 no new code expected.
-**Trap:** don't let Codex reuse FireballProjectile.cs untouched for enemy-fired projectiles. It
+**Trap:** don't let Claude reuse FireballProjectile.cs untouched for enemy-fired projectiles. It
 currently damages any Health it hits with no shooter-exclusion or faction check — reused
 naively, an enemy's shot can hit other enemies or itself on spawn.
 
 Prompt:
 ```
 Integrate the ranged enemy (model + animations provided): attack, health bar, wiring.
-Health bar: use the existing EnemyHealthBarUI.cs / BillboardUI.cs Canvas prefab as-is — this
-should require no code changes, just adding the prefab to the new enemy.
+
+Health bar: use the existing EnemyHealthBarUI.cs / BillboardUI.cs Canvas prefab as-is — wire it
+by dragging the prefab reference explicitly, do not search for it via GetComponentInChildren.
+
 Attack: on Attack-state entry, spawn a projectile toward the player. If reusing
 FireballProjectile.cs, add a guard so the projectile does not damage the enemy that fired it or
 other enemies — only the player's Health should take damage from an enemy-fired projectile.
 State explicitly how this is guarded (tag/layer check or spawn-frame self-ignore) in the
 changelog.
+
+Any reference to Health, the player Transform, or the health-bar prefab must be wired explicitly
+via serialized fields or the existing InjectPlayerReferences() spawn-time pattern — no ambiguous
+runtime component search. If the gesture/projectile pipeline needs to distinguish player vs.
+enemy Health at runtime, use a tag or layer check, not type-based GetComponent search.
+
+Before reporting done: compile via Unity MCP and confirm zero errors, then enter Play mode,
+spawn near another enemy and near the player, and check the Console for exceptions. Report the
+actual console output. Confirm via the running scene (not just code review) that only the
+player's Health takes damage, and that the health bar reflects damage taken.
+
 VFX: placeholder/minimal is fine this pass — cosmetic VFX is stretch, not required for the
 wiring to count as done.
+
 Deliverable: ranged enemy prefab, fires at player from range, correct health bar, no
-friendly-fire.
-Test: spawn near another enemy and near the player, confirm only the player takes damage,
-confirm health bar reflects damage taken.
+friendly-fire, MCP-verified clean console.
 ```
 
 ---
 
-## 7. [PINJU primary, CODEX if stuck] Environment + lighting
+## 7. [PINJU primary, Claude if stuck] Environment + lighting
 Own task. If stuck on something narrow (a NavMesh rebake issue after adding geometry, a
-post-processing volume not applying), bring Codex in for that specific piece — don't hand over
+post-processing volume not applying), bring Claude in for that specific piece — don't hand over
 the whole pass.
 
 ---

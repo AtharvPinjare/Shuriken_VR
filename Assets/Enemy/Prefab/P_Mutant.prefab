@@ -772,6 +772,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.25
       objectReference: {fileID: 0}
@@ -810,6 +822,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: ac82b4bdfe162df4ead4aef9cc758c03, type: 3}
       propertyPath: m_Name
@@ -914,6 +930,7 @@ MonoBehaviour:
   OnDamaged:
     m_PersistentCalls:
       m_Calls: []
+  faction: 1
 --- !u!136 &2922641150596047726
 CapsuleCollider:
   m_ObjectHideFlags: 0

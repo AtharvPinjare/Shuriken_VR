@@ -10,6 +10,10 @@ public class LevelCompleteController : MonoBehaviour
     public GameObject subtitleCanvas;
     public TMPro.TMP_Text subtitleText;
 
+    [Header("Spawn Positioning")]
+    public Transform playerTransform;         // drag CenterEyeAnchor or player root here
+    public float spawnDistance = 20f;
+
     [Header("Content")]
     [TextArea]
     public string subtitleMessage = "You have successfully completed the level. You can now proceed.";
@@ -20,10 +24,7 @@ public class LevelCompleteController : MonoBehaviour
     public float delayBeforeSceneLoad = 1f;
 
     [Header("Debug / State")]
-    [Tooltip("For manual testing only: check this in Play mode to fire the " +
-             "sequence without calling TriggerLevelComplete() from code.")]
     [SerializeField] private bool debugTriggerNow = false;
-
     [SerializeField] private bool hasTriggered = false;
 
     private void Update()
@@ -39,14 +40,13 @@ public class LevelCompleteController : MonoBehaviour
         if (hasTriggered) return;
         hasTriggered = true;
 
-        gameObject.SetActive(true);
+        PositionInFrontOfPlayer();   // NEW — happens before activating anything
 
+        gameObject.SetActive(true);
         if (characterModel != null)
             characterModel.SetActive(true);
-
         if (subtitleCanvas != null)
             subtitleCanvas.SetActive(true);
-
         if (subtitleText != null)
             subtitleText.text = subtitleMessage;
 
@@ -54,7 +54,6 @@ public class LevelCompleteController : MonoBehaviour
         {
             voiceAudioSource.clip = voiceLineClip;
             voiceAudioSource.Play();
-
             float totalDelay = voiceLineClip.length + delayBeforeSceneLoad;
             Invoke(nameof(EndSequenceAndLoadMenu), totalDelay);
         }
@@ -66,16 +65,35 @@ public class LevelCompleteController : MonoBehaviour
         }
     }
 
+    // NEW — spawns the character 20m ahead of wherever the player is facing at trigger time
+    private void PositionInFrontOfPlayer()
+    {
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("[LevelCompleteController] Player Transform not assigned — skipping reposition.");
+            return;
+        }
+
+        Vector3 flatForward = playerTransform.forward;
+        flatForward.y = 0f;
+        flatForward.Normalize();
+
+        transform.position = playerTransform.position + flatForward * spawnDistance;
+
+        // Face the character back toward the player
+        Vector3 lookDir = playerTransform.position - transform.position;
+        lookDir.y = 0f;
+        if (lookDir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(lookDir);
+    }
+
     private void EndSequenceAndLoadMenu()
     {
         if (subtitleCanvas != null)
             subtitleCanvas.SetActive(false);
-
         if (characterModel != null)
             characterModel.SetActive(false);
-
         gameObject.SetActive(false);
-
         SceneManager.LoadScene(mainMenuSceneName);
     }
 

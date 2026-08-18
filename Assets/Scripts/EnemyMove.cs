@@ -10,6 +10,7 @@ public class EnemyMove : MonoBehaviour
     [SerializeField] float loseRange = 10f;
     [SerializeField] float attackRange = 2f;
     [SerializeField] float attackExitRange = 2.5f;
+    [SerializeField] float chaseStopBuffer = 0.5f; // walk to a point this much inside attackRange
 
     [Header("Attack")]
     [SerializeField] float attackDamage = 10f;
@@ -89,7 +90,7 @@ public class EnemyMove : MonoBehaviour
 
             case EnemyState.Chase:
                 Vector3 dirToPlayer = (transform.position - _playerTransform.position).normalized;
-                Vector3 destination = _playerTransform.position + dirToPlayer * attackRange;
+                Vector3 destination = _playerTransform.position + dirToPlayer * (attackRange - chaseStopBuffer);
                 _agent.SetDestination(destination);
                 _animator.SetFloat("MoveSpeed", _agent.velocity.magnitude);
                 if (DistanceToPlayer() < attackRange)
@@ -106,11 +107,13 @@ public class EnemyMove : MonoBehaviour
                 {
                     _attackTimer = attackCooldown;
                     _animator.SetTrigger("Attack");
-                    Debug.Log($"Attacking! playerHealth null? {_playerHealth == null}");
                     _playerHealth?.TakeDamage(attackDamage);
                 }
                 if (DistanceToPlayer() > attackExitRange)
                     _currentState = EnemyState.Chase;
+                break;
+
+            case EnemyState.Dead:
                 break;
         }
     }

@@ -1,16 +1,18 @@
 using UnityEngine;
+using UnityEngine.Events;   // add this
 
 public class GameManager : MonoBehaviour
 {
     public enum GameState { Playing, Victory, Defeat }
-
     public static GameManager Instance { get; private set; }
-
     [SerializeField] private Health playerHealth;
     [SerializeField] private WaveManager waveManager;
     [SerializeField] private WaveSpawner waveSpawner;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private DragonMove[] dragons;
+
+    public UnityEvent OnDefeat;   // NEW
+    public UnityEvent OnVictory;  // NEW
 
     public GameState CurrentState { get; private set; } = GameState.Playing;
 
@@ -23,7 +25,6 @@ public class GameManager : MonoBehaviour
     {
         playerHealth.OnDeath.AddListener(HandlePlayerDeath);
         waveManager.OnAllWavesCleared.AddListener(HandleVictory);
-
         foreach (var dragon in dragons)
         {
             if (dragon != null)
@@ -35,8 +36,9 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentState != GameState.Playing) return;
         CurrentState = GameState.Defeat;
-        waveSpawner.gameObject.SetActive(false); // kills any running spawn coroutine
+        waveSpawner.gameObject.SetActive(false);
         Debug.Log("DEFEAT");
+        OnDefeat?.Invoke();   // NEW
     }
 
     private void HandleVictory()
@@ -45,5 +47,6 @@ public class GameManager : MonoBehaviour
         CurrentState = GameState.Victory;
         waveSpawner.gameObject.SetActive(false);
         Debug.Log("VICTORY");
+        OnVictory?.Invoke();  // NEW
     }
 }

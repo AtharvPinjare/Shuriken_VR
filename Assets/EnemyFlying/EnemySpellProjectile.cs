@@ -56,7 +56,7 @@ public class EnemySpellProjectile : MonoBehaviour
 
         _hasResolved = true;
 
-        if (impactVFX != null)
+        if (impactVFX != null && hitObject.tag == "Collide")
         {
             GameObject vfx = Instantiate(impactVFX, hitPoint, Quaternion.identity);
             Destroy(vfx, 0.5f);

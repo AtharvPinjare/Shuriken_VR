@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 3ea8a837198b8284ab10e3618037a1c8, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.5
+      value: 2.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3ea8a837198b8284ab10e3618037a1c8, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5
+      value: 2.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3ea8a837198b8284ab10e3618037a1c8, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.5
+      value: 2.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3ea8a837198b8284ab10e3618037a1c8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -148,3 +148,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireballProjectile
   hitExplosionClip: {fileID: 8300000, guid: 5080f0b60072aca4abc14ce07c52a27a, type: 3}
+  isHoming: 0
+  turnRateDegreesPerSecond: 90
+  target: {fileID: 0}
+  homingHitRadius: 1
+  shooterFaction: 0

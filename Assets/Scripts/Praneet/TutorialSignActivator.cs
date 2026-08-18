@@ -37,6 +37,6 @@ public class TutorialSignActivator : MonoBehaviour
 
     private void LoadTargetScene()
     {
-        SceneFader.Instance.FadeToScene(sceneToLoad);
+        SceneManager.LoadScene(sceneToLoad);
     }
 }

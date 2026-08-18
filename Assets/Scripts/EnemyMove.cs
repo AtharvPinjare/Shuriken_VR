@@ -104,13 +104,11 @@ public class EnemyMove : MonoBehaviour
                 {
                     _attackTimer = attackCooldown;
                     _animator.SetTrigger("Attack");
+                    Debug.Log($"Attacking! playerHealth null? {_playerHealth == null}");
                     _playerHealth?.TakeDamage(attackDamage);
                 }
                 if (DistanceToPlayer() > attackExitRange)
                     _currentState = EnemyState.Chase;
-                break;
-
-            case EnemyState.Dead:
                 break;
         }
     }

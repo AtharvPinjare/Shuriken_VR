@@ -106,7 +106,7 @@ public class FlyingMageEnemy : MonoBehaviour
         // projectile can't rely on OnCollisionEnter/OnTriggerEnter to hit it —
         // give it a Transform to proximity-check instead.
         if (proj.TryGetComponent(out EnemySpellProjectile spell))
-            spell.target = _playerTransform;
+            spell.target = _playerHealth.transform;
     }
 
 

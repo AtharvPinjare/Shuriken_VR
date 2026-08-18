@@ -88,7 +88,9 @@ public class EnemyMove : MonoBehaviour
                 break;
 
             case EnemyState.Chase:
-                _agent.SetDestination(_playerTransform.position);
+                Vector3 dirToPlayer = (transform.position - _playerTransform.position).normalized;
+                Vector3 destination = _playerTransform.position + dirToPlayer * attackRange;
+                _agent.SetDestination(destination);
                 _animator.SetFloat("MoveSpeed", _agent.velocity.magnitude);
                 if (DistanceToPlayer() < attackRange)
                     _currentState = EnemyState.Attack;

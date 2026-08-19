@@ -1,6 +1,7 @@
 using Oculus.Interaction;
 using Oculus.Interaction.Input;
 using UnityEngine;
+using UnityEngine.Events;
 
 [DisallowMultipleComponent]
 public sealed class AirPullLocomotion : MonoBehaviour
@@ -19,6 +20,20 @@ public sealed class AirPullLocomotion : MonoBehaviour
     [SerializeField] private HandFinger gripFinger = HandFinger.Index;
     [SerializeField, Min(0f)] private float maxHandDeltaPerFrame = 0.25f;
     [SerializeField] private bool lockVerticalMovement = true;
+
+    // -----------------------------------------
+    // MOVEMENT TUTORIAL
+    // -----------------------------------------
+
+    [Header("Movement Tutorial")]
+    [SerializeField] private float tutorialPullDistance = 0.15f;
+
+    public UnityEvent OnTutorialPullCompleted;
+
+    private float _tutorialPullDistance;
+    private bool _tutorialPullCompleted;
+
+    // -----------------------------------------
 
     private OVRCameraRig _cameraRig;
     private Transform _trackingSpace;
@@ -56,6 +71,9 @@ public sealed class AirPullLocomotion : MonoBehaviour
     private void OnEnable()
     {
         ResetHandMotion();
+
+        _tutorialPullDistance = 0f;
+        _tutorialPullCompleted = false;
     }
 
     private void LateUpdate()
@@ -89,8 +107,7 @@ public sealed class AirPullLocomotion : MonoBehaviour
         if (movingHandCount == 0)
             return;
 
-        // SUM the deltas, not average — pulling with both hands should move you faster than
-        // pulling with one.
+        // EXISTING MOVEMENT BEHAVIOUR
         transform.position -= combinedDelta * movementMultiplier;
     }
 
@@ -109,7 +126,9 @@ public sealed class AirPullLocomotion : MonoBehaviour
         _leftHandAnchor = _cameraRig.leftHandAnchor;
         _rightHandAnchor = _cameraRig.rightHandAnchor;
 
-        return _trackingSpace != null && _leftHandAnchor != null && _rightHandAnchor != null;
+        return _trackingSpace != null &&
+               _leftHandAnchor != null &&
+               _rightHandAnchor != null;
     }
 
     private void AccumulateHandDelta(
@@ -121,38 +140,83 @@ public sealed class AirPullLocomotion : MonoBehaviour
         ref Vector3 combinedDelta,
         ref int movingHandCount)
     {
-        bool controllerIsInHand = OVRInput.GetControllerIsInHandState(inputHand)
+        bool controllerIsInHand =
+            OVRInput.GetControllerIsInHandState(inputHand)
             == OVRInput.ControllerInHandState.ControllerInHand;
-        bool isTrackedHand = !controllerIsInHand
-            && hand != null
-            && hand.IsConnected
-            && hand.IsTrackedDataValid;
-        bool isGripping = isTrackedHand
-            ? hand.GetFingerPinchStrength(gripFinger) >= handPinchThreshold
-            : OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller) >= controllerGripThreshold;
 
-        if (!isGripping || !TryGetTrackingPosition(hand, handAnchor, isTrackedHand, out Vector3 currentPosition))
+        bool isTrackedHand =
+            !controllerIsInHand &&
+            hand != null &&
+            hand.IsConnected &&
+            hand.IsTrackedDataValid;
+
+        bool isGripping =
+            isTrackedHand
+            ? hand.GetFingerPinchStrength(gripFinger) >= handPinchThreshold
+            : OVRInput.Get(
+                OVRInput.Axis1D.PrimaryHandTrigger,
+                controller
+            ) >= controllerGripThreshold;
+
+        if (!isGripping ||
+            !TryGetTrackingPosition(
+                hand,
+                handAnchor,
+                isTrackedHand,
+                out Vector3 currentPosition))
         {
             motion.HasPreviousPosition = false;
+
+            // Reset tutorial accumulation when grip is released.
+            _tutorialPullDistance = 0f;
+
             return;
         }
 
         if (motion.HasPreviousPosition)
         {
-            Vector3 trackingDelta = currentPosition - motion.PreviousTrackingPosition;
-            Vector3 worldDelta = _trackingSpace.TransformVector(trackingDelta);
+            Vector3 trackingDelta =
+                currentPosition - motion.PreviousTrackingPosition;
 
-            // Strip vertical motion in world space before clamping/accumulating — pulling a
-            // hand up or down should never change rig height. Prevents floor clipping and
-            // stays independent of any NavMesh/ground-height assumptions elsewhere.
+            // -----------------------------------------
+            // EXISTING MOVEMENT CODE
+            // -----------------------------------------
+
+            Vector3 worldDelta =
+                _trackingSpace.TransformVector(trackingDelta);
+
             if (lockVerticalMovement)
                 worldDelta.y = 0f;
 
-            if (worldDelta.sqrMagnitude > maxHandDeltaPerFrame * maxHandDeltaPerFrame)
-                worldDelta = worldDelta.normalized * maxHandDeltaPerFrame;
+            if (worldDelta.sqrMagnitude >
+                maxHandDeltaPerFrame * maxHandDeltaPerFrame)
+            {
+                worldDelta =
+                    worldDelta.normalized * maxHandDeltaPerFrame;
+            }
 
             combinedDelta += worldDelta;
             movingHandCount++;
+
+            // -----------------------------------------
+            // MOVEMENT TUTORIAL DETECTION
+            // -----------------------------------------
+
+            if (!_tutorialPullCompleted)
+            {
+                _tutorialPullDistance += trackingDelta.magnitude;
+
+                if (_tutorialPullDistance >= tutorialPullDistance)
+                {
+                    _tutorialPullCompleted = true;
+
+                    Debug.Log(
+                        "[AirPullLocomotion] Movement tutorial gesture completed."
+                    );
+
+                    OnTutorialPullCompleted?.Invoke();
+                }
+            }
         }
 
         motion.PreviousTrackingPosition = currentPosition;
@@ -165,15 +229,22 @@ public sealed class AirPullLocomotion : MonoBehaviour
         bool isTrackedHand,
         out Vector3 trackingPosition)
     {
-        if (isTrackedHand && hand.GetRootPose(out Pose handPose))
+        if (isTrackedHand &&
+            hand.GetRootPose(out Pose handPose))
         {
-            trackingPosition = _trackingSpace.InverseTransformPoint(handPose.position);
+            trackingPosition =
+                _trackingSpace.InverseTransformPoint(handPose.position);
+
             return true;
         }
 
         if (handAnchor != null)
         {
-            trackingPosition = _trackingSpace.InverseTransformPoint(handAnchor.position);
+            trackingPosition =
+                _trackingSpace.InverseTransformPoint(
+                    handAnchor.position
+                );
+
             return true;
         }
 

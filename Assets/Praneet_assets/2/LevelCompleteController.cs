@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class LevelCompleteController : MonoBehaviour
 {
@@ -7,28 +6,46 @@ public class LevelCompleteController : MonoBehaviour
     public GameObject characterModel;
     public AudioSource voiceAudioSource;
     public AudioClip voiceLineClip;
+
     public GameObject subtitleCanvas;
     public TMPro.TMP_Text subtitleText;
 
-    [Header("Spawn Positioning")]
-    public Transform playerTransform;         // drag CenterEyeAnchor or player root here
-    public float spawnDistance = 20f;
-
     [Header("Content")]
-    [TextArea]
-    public string subtitleMessage = "You have successfully completed the level. You can now proceed.";
+    [TextArea(2, 5)]
+    public string subtitleMessage =
+        "You have successfully completed the level. You can now proceed.";
 
     [Header("Scene Transition")]
     public string mainMenuSceneName = "MainMenu";
-    [Tooltip("Delay in seconds after the voice line ends before loading the Main Menu.")]
+
+    [Tooltip("Delay after the voice line finishes before returning to Main Menu.")]
     public float delayBeforeSceneLoad = 1f;
 
     [Header("Debug / State")]
+    [SerializeField] private bool playOnSceneStart = true;
     [SerializeField] private bool debugTriggerNow = false;
-    [SerializeField] private bool hasTriggered = false;
+
+    private bool hasTriggered = false;
+
+    private void Start()
+    {
+        // Hide the ending elements initially.
+        if (characterModel != null)
+            characterModel.SetActive(false);
+
+        if (subtitleCanvas != null)
+            subtitleCanvas.SetActive(false);
+
+        // Automatically start when FinalScene loads.
+        if (playOnSceneStart)
+        {
+            TriggerLevelComplete();
+        }
+    }
 
     private void Update()
     {
+        // Optional manual testing.
         if (debugTriggerNow && !hasTriggered)
         {
             TriggerLevelComplete();
@@ -37,69 +54,112 @@ public class LevelCompleteController : MonoBehaviour
 
     public void TriggerLevelComplete()
     {
-        if (hasTriggered) return;
+        if (hasTriggered)
+            return;
+
         hasTriggered = true;
 
-        PositionInFrontOfPlayer();   // NEW — happens before activating anything
+        Debug.Log(
+            "[LevelCompleteController] Level complete sequence started."
+        );
 
-        gameObject.SetActive(true);
+        // ---------------------------------
+        // SHOW CHARACTER
+        // ---------------------------------
+
         if (characterModel != null)
             characterModel.SetActive(true);
+
+        // ---------------------------------
+        // SHOW SUBTITLES
+        // ---------------------------------
+
         if (subtitleCanvas != null)
             subtitleCanvas.SetActive(true);
+
         if (subtitleText != null)
             subtitleText.text = subtitleMessage;
 
-        if (voiceAudioSource != null && voiceLineClip != null)
+        // ---------------------------------
+        // PLAY VOICE
+        // ---------------------------------
+
+        if (voiceAudioSource != null &&
+            voiceLineClip != null)
         {
             voiceAudioSource.clip = voiceLineClip;
+
             voiceAudioSource.Play();
-            float totalDelay = voiceLineClip.length + delayBeforeSceneLoad;
-            Invoke(nameof(EndSequenceAndLoadMenu), totalDelay);
+
+            float totalDelay =
+                voiceLineClip.length +
+                delayBeforeSceneLoad;
+
+            Invoke(
+                nameof(ReturnToMainMenu),
+                totalDelay
+            );
         }
         else
         {
-            Debug.LogWarning("[LevelCompleteController] Voice AudioSource or Clip not assigned — no audio will play. " +
-                              "Falling back to delayBeforeSceneLoad only.");
-            Invoke(nameof(EndSequenceAndLoadMenu), delayBeforeSceneLoad);
+            Debug.LogWarning(
+                "[LevelCompleteController] " +
+                "Voice AudioSource or Voice Clip is missing."
+            );
+
+            Invoke(
+                nameof(ReturnToMainMenu),
+                delayBeforeSceneLoad
+            );
         }
     }
 
-    // NEW — spawns the character 20m ahead of wherever the player is facing at trigger time
-    private void PositionInFrontOfPlayer()
+    // ---------------------------------
+    // RETURN TO MAIN MENU
+    // ---------------------------------
+
+    private void ReturnToMainMenu()
     {
-        if (playerTransform == null)
-        {
-            Debug.LogWarning("[LevelCompleteController] Player Transform not assigned — skipping reposition.");
-            return;
-        }
+        Debug.Log(
+            "[LevelCompleteController] Returning to Main Menu."
+        );
 
-        Vector3 flatForward = playerTransform.forward;
-        flatForward.y = 0f;
-        flatForward.Normalize();
-
-        transform.position = playerTransform.position + flatForward * spawnDistance;
-
-        // Face the character back toward the player
-        Vector3 lookDir = playerTransform.position - transform.position;
-        lookDir.y = 0f;
-        if (lookDir.sqrMagnitude > 0.001f)
-            transform.rotation = Quaternion.LookRotation(lookDir);
-    }
-
-    private void EndSequenceAndLoadMenu()
-    {
         if (subtitleCanvas != null)
             subtitleCanvas.SetActive(false);
+
         if (characterModel != null)
             characterModel.SetActive(false);
-        gameObject.SetActive(false);
-        SceneManager.LoadScene(mainMenuSceneName);
+
+        if (SFader.Instance != null)
+        {
+            SFader.Instance.FadeToScene(
+                mainMenuSceneName
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[LevelCompleteController] " +
+                "SFader not found. Loading Main Menu directly."
+            );
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                mainMenuSceneName
+            );
+        }
     }
+
+    // ---------------------------------
+    // RESET
+    // ---------------------------------
 
     public void ResetSequence()
     {
+        CancelInvoke(
+            nameof(ReturnToMainMenu)
+        );
+
         hasTriggered = false;
         debugTriggerNow = false;
     }
-}
+}   

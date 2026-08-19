@@ -472,6 +472,12 @@ MonoBehaviour:
   waveSpawner: {fileID: 0}
   playerTransform: {fileID: 0}
   dragons: []
+  OnDefeat:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVictory:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &109429111
 Transform:
   m_ObjectHideFlags: 0
@@ -1422,6 +1428,10 @@ MonoBehaviour:
   gripFinger: 1
   maxHandDeltaPerFrame: 0.25
   lockVerticalMovement: 1
+  tutorialPullDistance: 0.15
+  OnTutorialPullCompleted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &456598785
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1938,7 +1948,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2037080, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       propertyPath: m_ClearFlags
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2037080, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       propertyPath: m_BackGroundColor.a

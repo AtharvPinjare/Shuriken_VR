@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class TutorialSignActivator : MonoBehaviour
 {
@@ -7,10 +6,9 @@ public class TutorialSignActivator : MonoBehaviour
     [Tooltip("Exact scene name to load, must be added in Build Settings")]
     public string sceneToLoad = "Game_Scene";
 
-    [Header("Optional feedback before load")]
+    [Header("Optional Feedback Before Load")]
     public GameObject activateVFX;
     public AudioSource activateSound;
-    public float loadDelay = 0f; // set >0 if you want VFX/sound to play before switching
 
     private bool activated = false;
 
@@ -28,15 +26,15 @@ public class TutorialSignActivator : MonoBehaviour
             if (activateSound != null)
                 activateSound.Play();
 
-            if (loadDelay > 0f)
-                Invoke(nameof(LoadTargetScene), loadDelay);
+            // USE THE FADER instead of directly loading the scene
+            if (SceneFader.Instance != null)
+            {
+                SceneFader.Instance.FadeToScene(sceneToLoad);
+            }
             else
-                LoadTargetScene();
+            {
+                Debug.LogError("SceneFader.Instance is NULL! Make sure a SceneFader exists in the scene.");
+            }
         }
-    }
-
-    private void LoadTargetScene()
-    {
-        SceneManager.LoadScene(sceneToLoad);
     }
 }

@@ -20,6 +20,7 @@ public class IntroNarration : MonoBehaviour
         }
 
         voiceSource.clip = introClip;
+        voiceSource.volume = 15.0f;
         voiceSource.Play();
     }
 }

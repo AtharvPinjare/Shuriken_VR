@@ -480,10 +480,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   _waves:
-  - {fileID: 11400000, guid: df4437e4d7a91af4a95eafb8064738e4, type: 2}
-  - {fileID: 11400000, guid: df4437e4d7a91af4a95eafb8064738e4, type: 2}
+  - waveData: {fileID: 11400000, guid: a121e07d18e7df040a416a18b430ad1a, type: 2}
+    spawnPoints:
+    - {fileID: 879784193}
+    - {fileID: 1027260476}
+    - {fileID: 358983956}
   _spawner: {fileID: 452748584}
-  _delayBetweenWaves: 1
   OnAllWavesCleared:
     m_PersistentCalls:
       m_Calls: []
@@ -920,10 +922,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56befbc715c2a814aa4c04f6cdb07381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveSpawner
-  _spawnPoints:
-  - {fileID: 879784193}
-  - {fileID: 1027260476}
-  - {fileID: 358983956}
   _playerTransform: {fileID: 414264665}
   _playerHealth: {fileID: 1106486469}
 --- !u!4 &452748585
@@ -2756,6 +2754,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 336397498761967009, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+      propertyPath: OnDeath.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3325865936022903249, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 9fbfa9248f26f6a49b7087a06604c7f6, type: 2}
     - target: {fileID: 3325865936022903249, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 1
@@ -2816,11 +2822,54 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6383556662329973097, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8326070538279196945, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7736531023964368211}
   m_SourcePrefab: {fileID: 100100000, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+--- !u!1 &7736531023964368208 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8326070538279196945, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+  m_PrefabInstance: {fileID: 7736531023964368207}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7736531023964368209 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2263524541001390209, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+  m_PrefabInstance: {fileID: 7736531023964368207}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &7736531023964368210 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3325865936022903249, guid: 3deb6284036c9734094d855923c5bc1e, type: 3}
+  m_PrefabInstance: {fileID: 7736531023964368207}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7736531023964368211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7736531023964368208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0781bb926b22af443858276bee845ee5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlyingMageEnemy1
+  animator: {fileID: 7736531023964368210}
+  floatSpeed: 2
+  floatAmplitude: 1
+  initialHoverHeight: 3
+  preferredRange: 8
+  rangeTolerance: 0.5
+  moveSpeed: 3
+  spellPrefab: {fileID: 8002271638062744636, guid: e327a4630fc315044bf8286275e45a14, type: 3}
+  castPoint: {fileID: 7736531023964368209}
+  fireRate: 6
+  projectileSpeed: 15
+  deathVFXPrefab: {fileID: 8378648546881499446, guid: 867c572a5be680d42a042d2349f10143, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

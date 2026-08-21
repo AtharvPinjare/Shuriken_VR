@@ -1,5 +1,5 @@
-// GestureTutorialStep.cs
 using UnityEngine;
+using UnityEngine.Video;
 using TMPro;
 using System;
 
@@ -8,18 +8,18 @@ public class GestureTutorialStep : MonoBehaviour
     [Header("UI References")]
     public TMP_Text instructionText;
 
-    [Tooltip("Primary hand icon (e.g. right hand). Used for all gestures.")]
-    public GameObject handAnimationPlaceholder;
-
-    [Tooltip("Secondary hand icon (e.g. left hand). Only assign for two-handed " +
-             "gestures like Movement — leave empty for single-hand gestures.")]
-    public GameObject handAnimationPlaceholderSecondary;
+    [Header("Gesture Video")]
+    [Tooltip("Raw Image that displays the gesture demonstration video.")]
+    public GameObject gestureVideo;
 
     [Header("Content")]
     [TextArea]
-    public string instructionMessage = "Punch and drag your hand toward yourself to move.";
+    public string instructionMessage =
+        "Perform the gesture shown in the video.";
 
-   
+    [Header("Video Settings")]
+    public bool loopVideo = true;
+
     public event Action OnGestureCompleted;
 
     private bool isActive = false;
@@ -27,24 +27,70 @@ public class GestureTutorialStep : MonoBehaviour
     public void BeginStep()
     {
         isActive = true;
+
         gameObject.SetActive(true);
 
         if (instructionText != null)
             instructionText.text = instructionMessage;
 
-        if (handAnimationPlaceholder != null)
-            handAnimationPlaceholder.SetActive(true);
+        // Show video
+        if (gestureVideo != null)
+            gestureVideo.SetActive(true);
 
-        if (handAnimationPlaceholderSecondary != null)
-            handAnimationPlaceholderSecondary.SetActive(true);
+        // Start video
+        VideoPlayer videoPlayer = GetComponent<VideoPlayer>();
+
+        if (videoPlayer != null)
+        {
+            videoPlayer.isLooping = loopVideo;
+
+            videoPlayer.Stop();
+
+            videoPlayer.Prepare();
+
+            videoPlayer.prepareCompleted -= OnVideoPrepared;
+            videoPlayer.prepareCompleted += OnVideoPrepared;
+        }
+    }
+
+    private void OnVideoPrepared(VideoPlayer player)
+    {
+        if (!isActive)
+            return;
+
+        player.Play();
     }
 
     public void MarkGestureComplete()
     {
-        if (!isActive) return;
+        if (!isActive)
+            return;
+
         isActive = false;
 
+        VideoPlayer videoPlayer = GetComponent<VideoPlayer>();
+
+        if (videoPlayer != null)
+        {
+            videoPlayer.prepareCompleted -= OnVideoPrepared;
+            videoPlayer.Stop();
+        }
+
         OnGestureCompleted?.Invoke();
+
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        VideoPlayer videoPlayer = GetComponent<VideoPlayer>();
+
+        if (videoPlayer != null)
+        {
+            videoPlayer.prepareCompleted -= OnVideoPrepared;
+            videoPlayer.Stop();
+        }
+
+        isActive = false;
     }
 }

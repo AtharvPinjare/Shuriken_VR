@@ -576,7 +576,6 @@ MonoBehaviour:
   sceneToLoad: Game_Scene
   activateVFX: {fileID: 0}
   activateSound: {fileID: 0}
-  loadDelay: 0
 --- !u!65 &122788931
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -903,12 +902,12 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 194169284}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -11.89}
+  m_LocalPosition: {x: 0, y: 0, z: 1.1099997}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1743443945}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 757440762}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1440,7 +1439,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 987ee1c7ad2aa7845b0b3f5562f99607, type: 3}
+  m_Resource: {fileID: 8300000, guid: 39dc38646505456488c5957ede980de9, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -2109,6 +2108,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 400004, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2109144071}
+    - targetCorrespondingSourceObject: {fileID: 400004, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 194169285}
     - targetCorrespondingSourceObject: {fileID: 459718, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 464300013}
@@ -2769,7 +2771,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &958666520
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3915,7 +3917,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IntroNarration
   voiceSource: {fileID: 1632751754}
   introClip: {fileID: 8300000, guid: b5a9788c2e69b454d960243f9b0218c0, type: 3}
-  startDelay: 3.5
+  startDelay: 2
 --- !u!4 &1632751756
 Transform:
   m_ObjectHideFlags: 0
@@ -4189,7 +4191,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4480,7 +4482,6 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 194169285}
   - {fileID: 757440759}
   - {fileID: 1552327610}
   - {fileID: 1049808352}

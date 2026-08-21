@@ -22,6 +22,6 @@ public class WaveStartAudio : MonoBehaviour
             clip = waveStartClips[Random.Range(0, waveStartClips.Length)];
 
         if (clip != null)
-            sfxSource.PlayOneShot(clip, 3.0f);
+            sfxSource.PlayOneShot(clip, 10.0f);
     }
 }

@@ -1,62 +1,105 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System.Collections;
 
 public class SceneFader : MonoBehaviour
 {
-    public Image fadeImage;
-    public float fadeDuration = 2f;
-
     public static SceneFader Instance;
 
-    void Awake()
+    [Header("Fade")]
+    public Image fadeImage;
+    public float fadeDuration = 1.5f;
+
+    private bool isFading = false;
+
+    private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            // Only protect THIS object, not its current parent chain
-            transform.SetParent(null); // detach from camera rig first
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
+        transform.SetParent(null);
+        DontDestroyOnLoad(gameObject);
+
+        // Start completely transparent
+        if (fadeImage != null)
+        {
+            Color c = fadeImage.color;
+            c.a = 0f;
+            fadeImage.color = c;
         }
     }
 
     public void FadeToScene(string sceneName)
     {
+        if (isFading) return;
+
         StartCoroutine(FadeOutThenLoad(sceneName));
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (Camera.main != null)
-        {
-            transform.position = Camera.main.transform.position + Camera.main.transform.forward * 0.3f;
-            transform.rotation = Camera.main.transform.rotation;
-        }
+        if (Camera.main == null)
+            return;
+
+        // For your VR world-space fade
+        transform.position =
+            Camera.main.transform.position +
+            Camera.main.transform.forward * 0.3f;
+
+        transform.rotation = Camera.main.transform.rotation;
     }
 
-    private System.Collections.IEnumerator FadeOutThenLoad(string sceneName)
+    private IEnumerator FadeOutThenLoad(string sceneName)
     {
-        yield return StartCoroutine(Fade(0f, 1f)); // fade to black
+        isFading = true;
+
+        // Fade to black
+        yield return StartCoroutine(Fade(0f, 1f));
+
+        // Load scene
         SceneManager.LoadScene(sceneName);
-        yield return null; // wait a frame for new scene to load
-        yield return StartCoroutine(Fade(1f, 0f)); // fade back in
+
+        // Wait until the new scene has rendered
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
+        // Fade back in
+        yield return StartCoroutine(Fade(1f, 0f));
+
+        isFading = false;
     }
 
-    private System.Collections.IEnumerator Fade(float from, float to)
+    private IEnumerator Fade(float from, float to)
     {
-        float t = 0f;
-        Color c = fadeImage.color;
-        while (t < fadeDuration)
+        if (fadeImage == null)
         {
-            t += Time.deltaTime;
-            float alpha = Mathf.Lerp(from, to, t / fadeDuration);
-            fadeImage.color = new Color(c.r, c.g, c.b, alpha);
+            Debug.LogError("SceneFader: Fade Image is not assigned!");
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        Color color = fadeImage.color;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / fadeDuration);
+
+            color.a = Mathf.Lerp(from, to, t);
+            fadeImage.color = color;
+
             yield return null;
         }
-        fadeImage.color = new Color(c.r, c.g, c.b, to);
+
+        color.a = to;
+        fadeImage.color = color;
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FlyingMageEnemy : MonoBehaviour
+public class FlyingMageEnemy1 : MonoBehaviour
 {
     [Header("Targeting & Animation")]
     public Animator animator;
@@ -96,40 +96,40 @@ public class FlyingMageEnemy : MonoBehaviour
 
         if (animator != null)
             animator.SetTrigger("Cast");
-
+        
     }
 
     // Call this from an Animation Event on the "Two hand Spell" clip, placed at the
     // exact frame where the hands/staff release the spell — NOT called directly from code anymore.
     public void SpawnProjectile()
+{
+    if (!isCasting)
     {
-        if (!isCasting)
-        {
-            Debug.LogWarning("SpawnProjectile called while enemy is NOT casting!");
-            return;
-        }
-
-        if (spellPrefab == null || castPoint == null || _playerTransform == null)
-            return;
-
-        Transform aimTarget = _playerHealth != null
-            ? _playerHealth.transform
-            : _playerTransform;
-
-        Vector3 direction =
-            (aimTarget.position - castPoint.position).normalized;
-
-        Quaternion aimRotation = Quaternion.LookRotation(direction);
-
-        GameObject proj =
-            Instantiate(spellPrefab, castPoint.position, aimRotation);
-
-        if (proj.TryGetComponent(out Rigidbody rb))
-            rb.linearVelocity = direction * projectileSpeed;
-
-        if (proj.TryGetComponent(out EnemySpellProjectile spell))
-            spell.target = aimTarget;
+        Debug.LogWarning("SpawnProjectile called while enemy is NOT casting!");
+        return;
     }
+
+    if (spellPrefab == null || castPoint == null || _playerTransform == null)
+        return;
+
+    Transform aimTarget = _playerHealth != null
+        ? _playerHealth.transform
+        : _playerTransform;
+
+    Vector3 direction =
+        (aimTarget.position - castPoint.position).normalized;
+
+    Quaternion aimRotation = Quaternion.LookRotation(direction);
+
+    GameObject proj =
+        Instantiate(spellPrefab, castPoint.position, aimRotation);
+
+    if (proj.TryGetComponent(out Rigidbody rb))
+        rb.linearVelocity = direction * projectileSpeed;
+
+    if (proj.TryGetComponent(out EnemySpellProjectile spell))
+        spell.target = aimTarget;
+}
 
     // Call this from an Animation Event at the very END of the "Two hand Spell" clip,
     // so movement resumes exactly when the animation returns to idle.

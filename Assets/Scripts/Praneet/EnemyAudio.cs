@@ -8,20 +8,24 @@ public class EnemyAudio : MonoBehaviour
     [SerializeField] private AudioClip[] footstepClips;
     [SerializeField] private float stepInterval = 0.45f;
     [SerializeField] private float moveThreshold = 0.1f;
+    [SerializeField] private float footstepVolume = 1.5f;
 
     [Header("Attack")]
     [SerializeField] private AudioClip[] punchClips;
+    [SerializeField] private float punchVolume = 2f;
 
     [Header("Death")]
     [SerializeField] private AudioClip[] dieClips;
+    [SerializeField] private float dieVolume = 1.8f;
 
     [Header("Idle")]
     [SerializeField] private AudioClip[] idleClips;
-    [SerializeField] private float idleMinInterval = 4f;   // random gap range between idle sounds
+    [SerializeField] private float idleVolume = 1.5f;
+    [SerializeField] private float idleMinInterval = 4f;
     [SerializeField] private float idleMaxInterval = 9f;
 
-    private AudioSource _sfxSource;      // one-shots: footsteps, punch, die
-    private AudioSource _idleSource;     // separate source so idle loop/one-shots don't cut off footsteps
+    private AudioSource _sfxSource;
+    private AudioSource _idleSource;
     private NavMeshAgent _agent;
     private Health _health;
 
@@ -64,10 +68,10 @@ public class EnemyAudio : MonoBehaviour
             _stepTimer -= Time.deltaTime;
             if (_stepTimer <= 0f)
             {
-                PlayRandomClip(_sfxSource, footstepClips);
+                PlayRandomClip(_sfxSource, footstepClips, footstepVolume);
                 _stepTimer = stepInterval;
             }
-            _idleTimer = 0f; // don't play idle sounds while walking
+            _idleTimer = 0f;
         }
         else
         {
@@ -75,22 +79,21 @@ public class EnemyAudio : MonoBehaviour
             _idleTimer -= Time.deltaTime;
             if (_idleTimer <= 0f)
             {
-                PlayRandomClip(_idleSource, idleClips);
+                PlayRandomClip(_idleSource, idleClips, idleVolume);
                 ResetIdleTimer();
             }
         }
     }
 
-    // Call this from an Animation Event on the Attack/Punch animation clip
     public void PlayPunchSound()
     {
-        PlayRandomClip(_sfxSource, punchClips);
+        PlayRandomClip(_sfxSource, punchClips, punchVolume);
     }
 
     private void PlayDieSound()
     {
         _isDead = true;
-        PlayRandomClip(_sfxSource, dieClips);
+        PlayRandomClip(_sfxSource, dieClips, dieVolume);
     }
 
     private void ResetIdleTimer()
@@ -98,10 +101,10 @@ public class EnemyAudio : MonoBehaviour
         _idleTimer = Random.Range(idleMinInterval, idleMaxInterval);
     }
 
-    private void PlayRandomClip(AudioSource source, AudioClip[] clips)
+    private void PlayRandomClip(AudioSource source, AudioClip[] clips, float volumeScale)
     {
         if (clips == null || clips.Length == 0 || source == null) return;
         AudioClip clip = clips[Random.Range(0, clips.Length)];
-        source.PlayOneShot(clip);
+        source.PlayOneShot(clip, volumeScale);
     }
 }

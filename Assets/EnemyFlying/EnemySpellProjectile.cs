@@ -15,7 +15,7 @@ public class EnemySpellProjectile : MonoBehaviour
     [Header("Player hit detection")]
     [Tooltip("The player has no Collider anywhere in its hierarchy, so OnCollisionEnter/OnTriggerEnter can never fire against it — checked by proximity instead, same pattern FireballProjectile.cs uses for its homing case.")]
     public Transform target;
-    [SerializeField] private float hitRadius = 1f;
+    [SerializeField] private float hitRadius = 0.25f;
 
     private bool _hasResolved;
 
@@ -52,16 +52,23 @@ public class EnemySpellProjectile : MonoBehaviour
                 return; // friendly-fire guard — pass through without resolving
 
             health.TakeDamage(damage);
+            _hasResolved = true;
+        }
+        else if (hitObject.CompareTag("Collide"))
+        {
+            // Hit environment geometry meant to stop the projectile — resolve here.
+            _hasResolved = true;
+        }
+        else
+        {
+            return; // hit something irrelevant (floor, random collider) — pass through, keep flying
         }
 
-        _hasResolved = true;
-
-        if (impactVFX != null && hitObject.tag == "Collide")
+        if (impactVFX != null)
         {
             GameObject vfx = Instantiate(impactVFX, hitPoint, Quaternion.identity);
             Destroy(vfx, 0.5f);
         }
-
         Destroy(gameObject);
     }
 }

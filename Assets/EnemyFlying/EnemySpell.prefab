@@ -158,7 +158,9 @@ MonoBehaviour:
   damage: 15
   impactVFX: {fileID: 3153472991145048103, guid: 3407e378c048bb5438424b28c7740b48, type: 3}
   lifetime: 8
-  targetTag: Collide
+  shooterFaction: 1
+  target: {fileID: 0}
+  hitRadius: 1
 --- !u!1001 &2239073171847396265
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -888,14 +888,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 947d6ef3d401d7345af2155bf7942678, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMove
-  detectionRange: 40
-  loseRange: 30
+  detectionRange: 45
+  loseRange: 55
   attackRange: 4
   attackExitRange: 2.5
   chaseStopBuffer: 2
   attackDamage: 10
   attackCooldown: 2
-  deathDestroyDelay: 5
+  deathDestroyDelay: 2.5
   slowColor: {r: 0.4, g: 0.7, b: 1, a: 1}
   _currentState: 0
 --- !u!195 &5060757102751837104
@@ -1174,12 +1174,16 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 5277e86ecdf947a468e3415530fda397, type: 3}
   stepInterval: 0.45
   moveThreshold: 0.1
+  footstepVolume: 1.5
   punchClips:
   - {fileID: 8300000, guid: ac1b923189f883441a0ed353a1bdb684, type: 3}
+  punchVolume: 2
   dieClips:
   - {fileID: 8300000, guid: 3b725a43be66f164f9db1cbc8f438289, type: 3}
+  dieVolume: 1.8
   idleClips:
   - {fileID: 8300000, guid: fc98a7a4bc0348049a9482b7d7be1ba2, type: 3}
+  idleVolume: 1.5
   idleMinInterval: 4
   idleMaxInterval: 9
 --- !u!4 &7934463200072728392 stripped

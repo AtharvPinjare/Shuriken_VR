@@ -23,6 +23,6 @@ public class PlayerHitSound : MonoBehaviour
     private void PlayNow()
     {
         AudioClip clip = hitSounds[Random.Range(0, hitSounds.Length)];
-        sfxSource.PlayOneShot(clip);
+        sfxSource.PlayOneShot(clip,5.0f);
     }
 }

@@ -1,14 +1,17 @@
-// WaveData.cs
 using UnityEngine;
+
+[System.Serializable]
+public class EnemyEntry
+{
+    public GameObject enemyPrefab;
+    public int count;
+}
 
 [CreateAssetMenu(fileName = "NewWaveData", menuName = "Shuriken VR/WaveData")]
 public class WaveData : ScriptableObject
 {
-    [Tooltip("Enemy prefab to spawn for this wave.")]
-    public GameObject enemyPrefab;
-
-    [Tooltip("How many enemies spawn in this wave.")]
-    public int enemyCount = 5;
+    [Tooltip("One entry = single enemy type. Multiple entries = alternates between types.")]
+    public EnemyEntry[] enemies;
 
     [Tooltip("Seconds between each enemy spawn.")]
     public float spawnInterval = 1.5f;

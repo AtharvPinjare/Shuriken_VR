@@ -94,7 +94,9 @@ public class FlyingMageEnemy : MonoBehaviour
     {
         if (spellPrefab == null || castPoint == null || _playerTransform == null) return;
 
-        Vector3 direction = (_playerTransform.position - castPoint.position).normalized;
+        Transform aimTarget = _playerHealth != null ? _playerHealth.transform : _playerTransform;
+
+        Vector3 direction = (aimTarget.position - castPoint.position).normalized;
         Quaternion aimRotation = Quaternion.LookRotation(direction);
 
         GameObject proj = Instantiate(spellPrefab, castPoint.position, aimRotation);
@@ -102,11 +104,8 @@ public class FlyingMageEnemy : MonoBehaviour
         if (proj.TryGetComponent(out Rigidbody rb))
             rb.linearVelocity = direction * projectileSpeed;
 
-        // The player has no Collider anywhere in its hierarchy, so the
-        // projectile can't rely on OnCollisionEnter/OnTriggerEnter to hit it —
-        // give it a Transform to proximity-check instead.
         if (proj.TryGetComponent(out EnemySpellProjectile spell))
-            spell.target = _playerHealth.transform;
+            spell.target = aimTarget;
     }
 
 
